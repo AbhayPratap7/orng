@@ -180,7 +180,8 @@
     text-align:center;
     padding:24px;
   }
-  #site.show{ opacity:1; }
+  #site{ pointer-events:none; }
+  #site.show{ opacity:1; pointer-events:auto; }
   #site .inner{ max-width:560px; }
   #site h1{
     font-family:'Fredoka', sans-serif;
@@ -240,7 +241,7 @@
   <canvas id="slice-canvas"></canvas>
 </div>
 
-<div id="site">
+<div id="site" hidden>
   <div class="inner">
     <h1>Welcome to ORNG.BNB</h1>
     <p>You sliced your way in. This is where the rest of the site picks up — swap this block out for your real homepage content.</p>
