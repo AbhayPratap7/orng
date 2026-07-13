@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ORNG.BNB — slice to enter</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --cream:#fffdf8;
+    --ink:#241a12;
+    --orange:#f2801f;
+    --orange-deep:#d9660e;
+    --peel:#e8791c;
+    --flesh:#ffc24d;
+    --leaf:#3d7a34;
+    --purple:#6b3fa0;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; width:100%; height:100%;
+    background:var(--cream);
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    overflow:hidden;
+  }
+
+  #stage{
+    position:fixed; inset:0;
+    overflow:hidden;
+    touch-action:none;
+    cursor: crosshair;
+    transition: opacity .6s ease, filter .6s ease;
+  }
+  #stage.leaving{ opacity:0; filter:blur(6px); pointer-events:none; }
+
+  .fruit{
+    position:absolute;
+    will-change: transform;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.12));
+    pointer-events:none;
+  }
+  .fruit svg{ display:block; width:100%; height:100%; }
+
+  /* ---- center orange rig ---- */
+  #orange-rig{
+    position:absolute;
+    left:50%; top:50%;
+    width:min(30vw, 220px); height:min(30vw, 220px);
+    transform: translate(-50%,-50%);
+    z-index:5;
+  }
+  #glow-ring{
+    position:absolute; inset:-18%;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(242,128,31,.28) 0%, rgba(242,128,31,0) 70%);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ transform:scale(.92); opacity:.7; }
+    50%{ transform:scale(1.12); opacity:1; }
+  }
+  #orange{
+    position:absolute; inset:0;
+    filter: drop-shadow(0 10px 18px rgba(180,90,10,.35));
+    will-change: transform;
+  }
+  #orange svg{ width:100%; height:100%; display:block; }
+
+  #orange-rig.sliced #glow-ring, #orange-rig.sliced #orange{ opacity:0; transition: opacity .25s ease; }
+
+  .half{
+    position:absolute; inset:0;
+    border-radius:50%;
+    opacity:0;
+    pointer-events:none;
+  }
+  .half .peel{
+    position:absolute; inset:0; border-radius:50%;
+    background:var(--peel);
+  }
+  .half .flesh{
+    position:absolute; inset:6%; border-radius:50%;
+    background:
+      repeating-conic-gradient(from 0deg, rgba(255,255,255,.35) 0deg 2deg, transparent 2deg 16deg),
+      radial-gradient(circle at 50% 45%, #fff2cf, var(--flesh) 55%, #ff9d2e 100%);
+  }
+  .half.left  { clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%); }
+  .half.right { clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%); }
+  .half.fly{
+    animation-duration:.75s;
+    animation-timing-function: cubic-bezier(.2,.8,.3,1);
+    animation-fill-mode: forwards;
+  }
+  .half.left.fly{ animation-name: flyLeft; }
+  .half.right.fly{ animation-name: flyRight; }
+  @keyframes flyLeft{
+    0%{ opacity:1; transform: translate(0,0) rotate(0deg); }
+    100%{ opacity:0; transform: translate(var(--fx), var(--fy)) rotate(-50deg); }
+  }
+  @keyframes flyRight{
+    0%{ opacity:1; transform: translate(0,0) rotate(0deg); }
+    100%{ opacity:0; transform: translate(calc(var(--fx) * -1), calc(var(--fy) * -1)) rotate(50deg); }
+  }
+
+  .droplet{
+    position:fixed; width:8px; height:8px; border-radius:50%;
+    background: radial-gradient(circle, #ffe19a, #f2801f);
+    pointer-events:none;
+    animation: burst .7s ease-out forwards;
+    z-index:20;
+  }
+  @keyframes burst{
+    0%{ transform: translate(0,0) scale(1); opacity:1; }
+    100%{ transform: translate(var(--tx), var(--ty)) scale(.3); opacity:0; }
+  }
+
+  .flash{
+    position:fixed; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,244,214,.9), rgba(242,128,31,0) 70%);
+    pointer-events:none;
+    transform: translate(-50%,-50%) scale(0);
+    animation: flash .5s ease-out forwards;
+    z-index:19;
+  }
+  @keyframes flash{
+    0%{ transform: translate(-50%,-50%) scale(0); opacity:.9; }
+    100%{ transform: translate(-50%,-50%) scale(2.6); opacity:0; }
+  }
+
+  /* ---- gate text ---- */
+  #gate-text{
+    position:absolute; left:50%; bottom:9%;
+    transform:translateX(-50%);
+    text-align:center;
+    z-index:5;
+    transition: opacity .4s ease;
+  }
+  #gate-text .hint{
+    margin:0 0 10px;
+    font-size:13px;
+    letter-spacing:.35em;
+    text-transform:uppercase;
+    color:#7a5a33;
+    font-weight:500;
+  }
+  #gate-text .logo{
+    margin:0;
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:clamp(28px, 5vw, 44px);
+    letter-spacing:.14em;
+    color:var(--orange-deep);
+  }
+  #skip-link{
+    margin-top:14px;
+    background:none; border:none;
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    color:#a98a5f;
+    text-decoration:underline;
+    cursor:pointer;
+    display:block;
+    margin-left:auto; margin-right:auto;
+  }
+
+  #slice-canvas{
+    position:fixed; inset:0; z-index:15; pointer-events:none;
+  }
+
+  /* ---- revealed site ---- */
+  #site{
+    position:fixed; inset:0;
+    background:var(--cream);
+    display:flex; align-items:center; justify-content:center;
+    opacity:0;
+    transition: opacity .8s ease;
+    text-align:center;
+    padding:24px;
+  }
+  #site.show{ opacity:1; }
+  #site .inner{ max-width:560px; }
+  #site h1{
+    font-family:'Fredoka', sans-serif;
+    font-size:clamp(32px, 6vw, 56px);
+    color:var(--orange-deep);
+    margin:0 0 14px;
+    letter-spacing:.04em;
+  }
+  #site p{
+    font-size:16px; line-height:1.6; color:#5a4530;
+    margin:0 0 26px;
+  }
+  #site button.cta{
+    background:var(--orange);
+    color:#fff; border:none;
+    font-family:'Inter', sans-serif;
+    font-weight:600; font-size:14px;
+    letter-spacing:.06em; text-transform:uppercase;
+    padding:14px 30px; border-radius:999px;
+    cursor:pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #glow-ring{ animation:none; }
+    .fruit, #orange{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <!-- floating fruits -->
+  <div class="fruit" data-fruit="apple"></div>
+  <div class="fruit" data-fruit="banana"></div>
+  <div class="fruit" data-fruit="grapes"></div>
+  <div class="fruit" data-fruit="pineapple"></div>
+  <div class="fruit" data-fruit="carrot"></div>
+  <div class="fruit" data-fruit="guava"></div>
+  <div class="fruit" data-fruit="pear"></div>
+  <div class="fruit" data-fruit="mango"></div>
+  <div class="fruit" data-fruit="custard"></div>
+
+  <!-- center orange -->
+  <div id="orange-rig">
+    <div id="glow-ring"></div>
+    <div id="orange"></div>
+    <div class="half left"><div class="peel"></div><div class="flesh"></div></div>
+    <div class="half right"><div class="peel"></div><div class="flesh"></div></div>
+  </div>
+
+  <div id="gate-text">
+    <p class="hint">go on&hellip; slice me to get in!</p>
+    <h1 class="logo">ORNG.BNB</h1>
+    <button id="skip-link">enter without slicing</button>
+  </div>
+
+  <canvas id="slice-canvas"></canvas>
+</div>
+
+<div id="site">
+  <div class="inner">
+    <h1>Welcome to ORNG.BNB</h1>
+    <p>You sliced your way in. This is where the rest of the site picks up — swap this block out for your real homepage content.</p>
+    <button class="cta">Explore the shop</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- fruit artwork ----------
+  const svgWrap = (inner) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+
+  const FRUITS = {
+    apple: svgWrap(`
+      <path d="M50 32 C34 18,14 34,16 56 C18 80,36 92,50 86 C64 92,82 80,84 56 C86 34,66 18,50 32 Z" fill="#d81f3a"/>
+      <path d="M50 32 C50 32,52 20,45 15" stroke="#7a4a24" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M50 20 Q62 12 60 24 Q52 28 50 20 Z" fill="#4a8c3a"/>
+      <ellipse cx="38" cy="46" rx="6" ry="9" fill="#ffffff" opacity=".25"/>
+    `),
+    banana: svgWrap(`
+      <path d="M28 78 C22 62,26 40,42 26 C50 19,58 16,62 18 C58 24,50 28,44 36 C34 48,32 64,40 76 C44 82,52 84,58 80 C62 78,64 73,63 68 C67 72,70 79,66 85 C60 92,46 91,38 86 C32 82,29 82,28 78 Z" fill="#f4c521"/>
+      <path d="M58 18 C60 16,63 15,62 12" stroke="#5c4420" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M39 82 C37 85,32 86,29 84" stroke="#5c4420" stroke-width="3" fill="none" stroke-linecap="round"/>
+    `),
+    grapes: svgWrap(`
+      <path d="M46 18 Q52 8 60 14" stroke="#4a8c3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M48 16 Q56 10 62 20 Q54 22 48 16 Z" fill="#4a8c3a"/>
+      <g fill="#7c3fa0">
+        <circle cx="50" cy="30" r="10"/>
+        <circle cx="38" cy="42" r="10"/>
+        <circle cx="62" cy="42" r="10"/>
+        <circle cx="32" cy="58" r="10"/>
+        <circle cx="50" cy="58" r="10"/>
+        <circle cx="68" cy="58" r="10"/>
+        <circle cx="41" cy="74" r="10"/>
+        <circle cx="59" cy="74" r="10"/>
+      </g>
+    `),
+    pineapple: svgWrap(`
+      <g stroke="#2e6b2e" stroke-width="3" stroke-linecap="round">
+        <path d="M50 26 L46 4"/><path d="M50 26 L54 4"/>
+        <path d="M50 26 L38 8"/><path d="M50 26 L62 8"/>
+        <path d="M50 26 L32 16"/><path d="M50 26 L68 16"/>
+      </g>
+      <path d="M28 42 C28 28,72 28,72 42 C74 60,68 88,50 92 C32 88,26 60,28 42 Z" fill="#e3a729"/>
+      <g stroke="#b9791c" stroke-width="2" opacity=".8">
+        <path d="M28 44 L72 44"/><path d="M27 56 L73 56"/><path d="M29 68 L71 68"/>
+        <path d="M33 32 L46 90"/><path d="M50 30 L50 92"/><path d="M67 32 L54 90"/>
+      </g>
+    `),
+    carrot: svgWrap(`
+      <path d="M40 22 C36 20,30 22,30 22 C34 26,38 28,40 32" stroke="#3d7a34" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M46 20 C46 20,46 14,44 10" stroke="#3d7a34" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M52 22 C56 20,60 22,60 22" stroke="#3d7a34" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M42 30 L58 30 L52 88 C50 94,46 94,44 88 Z" fill="#ef7d24"/>
+      <g stroke="#c85f16" stroke-width="1.6" opacity=".6">
+        <path d="M44 42 L56 42"/><path d="M45 54 L55 54"/><path d="M46 66 L54 66"/>
+      </g>
+    `),
+    guava: svgWrap(`
+      <circle cx="46" cy="54" r="30" fill="#8bc14a"/>
+      <path d="M56 30 C60 20,72 16,80 20" stroke="#3d7a34" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M58 26 Q76 14 82 24 Q70 34 58 26 Z" fill="#4a8c3a"/>
+      <ellipse cx="36" cy="44" rx="7" ry="10" fill="#ffffff" opacity=".2"/>
+    `),
+    pear: svgWrap(`
+      <path d="M48 20 C46 24,52 28,52 32" stroke="#6b4226" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M52 24 Q66 16 68 28 Q58 34 52 24 Z" fill="#4a8c3a"/>
+      <path d="M50 34 C38 34,32 46,34 58 C30 72,36 92,52 92 C68 92,74 72,70 58 C72 46,62 34,50 34 Z" fill="#c7d94a"/>
+      <ellipse cx="42" cy="60" rx="6" ry="10" fill="#ffffff" opacity=".25"/>
+    `),
+    mango: svgWrap(`
+      <path d="M56 26 C50 22,44 24,42 30" stroke="#3d7a34" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M40 30 Q28 26 30 38 Q42 40 40 30 Z" fill="#3d7a34"/>
+      <path d="M30 52 C28 34,50 24,66 34 C82 44,78 70,62 82 C46 94,32 78,30 52 Z" fill="#f2a52c"/>
+      <ellipse cx="46" cy="46" rx="8" ry="12" fill="#ffffff" opacity=".2"/>
+    `),
+    custard: svgWrap(`
+      <path d="M50 16 L50 8" stroke="#3d7a34" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="50" cy="56" r="34" fill="#8bb44a"/>
+      <g fill="#6f9a3a" opacity=".8">
+        <circle cx="38" cy="32" r="4"/><circle cx="50" cy="28" r="4"/><circle cx="62" cy="32" r="4"/>
+        <circle cx="28" cy="44" r="4"/><circle cx="42" cy="42" r="4"/><circle cx="58" cy="42" r="4"/><circle cx="72" cy="44" r="4"/>
+        <circle cx="24" cy="58" r="4"/><circle cx="38" cy="56" r="4"/><circle cx="50" cy="54" r="4"/><circle cx="62" cy="56" r="4"/><circle cx="76" cy="58" r="4"/>
+        <circle cx="30" cy="72" r="4"/><circle cx="44" cy="70" r="4"/><circle cx="56" cy="70" r="4"/><circle cx="70" cy="72" r="4"/>
+        <circle cx="40" cy="84" r="4"/><circle cx="52" cy="84" r="4"/><circle cx="62" cy="82" r="4"/>
+      </g>
+    `)
+  };
+
+  const ORANGE_SVG = svgWrap(`
+    <circle cx="50" cy="54" r="34" fill="#f2801f"/>
+    <circle cx="50" cy="54" r="34" fill="url(#og)"/>
+    <path d="M50 20 C48 24,52 26,50 30" stroke="#6b4226" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M52 22 Q66 14 68 26 Q58 32 52 22 Z" fill="#3d7a34"/>
+    <ellipse cx="38" cy="42" rx="8" ry="12" fill="#ffffff" opacity=".22"/>
+    <defs>
+      <radialGradient id="og" cx="35%" cy="30%" r="75%">
+        <stop offset="0%" stop-color="#ffb454"/>
+        <stop offset="60%" stop-color="#f2801f" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+  `);
+
+  document.querySelectorAll('.fruit').forEach(el=>{
+    el.innerHTML = FRUITS[el.dataset.fruit] || '';
+  });
+  document.getElementById('orange').innerHTML = ORANGE_SVG;
+
+  // ---------- ambient floating layout ----------
+  const layout = {
+    apple:     {x:15, y:14, size:60},
+    banana:    {x:56, y:12, size:80},
+    grapes:    {x:30, y:31, size:70},
+    pineapple: {x:79, y:34, size:75},
+    carrot:    {x:12, y:54, size:65},
+    guava:     {x:80, y:66, size:75},
+    pear:      {x:16, y:79, size:80},
+    mango:     {x:55, y:77, size:55},
+    custard:   {x:86, y:88, size:65}
+  };
+
+  const stage = document.getElementById('stage');
+  const fruitEls = Array.from(document.querySelectorAll('.fruit')).map((el, i)=>{
+    const cfg = layout[el.dataset.fruit];
+    el.style.width = cfg.size + 'px';
+    el.style.height = cfg.size + 'px';
+    return {
+      el,
+      xPct: cfg.x, yPct: cfg.y,
+      ax: 18 + (i%3)*6, ay: 14 + (i%4)*5,
+      speed: 0.4 + (i%5)*0.12,
+      phase: i * 1.3,
+      rphase: i * 0.9
+    };
+  });
+
+  const orangeEl = document.getElementById('orange');
+
+  function frame(t){
+    const time = t / 1000;
+    const w = stage.clientWidth, h = stage.clientHeight;
+    fruitEls.forEach(f=>{
+      const baseX = (f.xPct/100) * w;
+      const baseY = (f.yPct/100) * h;
+      const dx = reduceMotion ? 0 : Math.sin(time*f.speed + f.phase) * f.ax;
+      const dy = reduceMotion ? 0 : Math.cos(time*f.speed*0.8 + f.phase) * f.ay;
+      const rot = reduceMotion ? 0 : Math.sin(time*f.speed*0.5 + f.rphase) * 10;
+      f.el.style.transform = `translate(${baseX+dx}px, ${baseY+dy}px) rotate(${rot}deg)`;
+    });
+    if(!reduceMotion){
+      const bob = Math.sin(time*1.2) * 6;
+      orangeEl.style.transform = `translateY(${bob}px) rotate(${Math.sin(time*0.6)*4}deg)`;
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // ---------- slice trail ----------
+  const canvas = document.getElementById('slice-canvas');
+  const ctx = canvas.getContext('2d');
+  function resizeCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  let dragging = false;
+  let points = [];
+  let sliced = false;
+
+  function drawTrail(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(points.length < 2) return;
+    ctx.strokeStyle = 'rgba(242,128,31,0.85)';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for(let i=1;i<points.length;i++) ctx.lineTo(points[i].x, points[i].y);
+    ctx.stroke();
+  }
+
+  function clearTrailSoon(){
+    setTimeout(()=>{
+      if(!dragging){ points = []; ctx.clearRect(0,0,canvas.width,canvas.height); }
+    }, 200);
+  }
+
+  function orangeRect(){
+    const rig = document.getElementById('orange-rig');
+    return rig.getBoundingClientRect();
+  }
+
+  function pathHitsOrange(pts){
+    const r = orangeRect();
+    const cx = r.left + r.width/2, cy = r.top + r.height/2;
+    const radius = r.width/2 * 1.05;
+    return pts.some(p=>{
+      const dx = p.x-cx, dy = p.y-cy;
+      return Math.sqrt(dx*dx+dy*dy) < radius;
+    });
+  }
+
+  function pathLength(pts){
+    let len = 0;
+    for(let i=1;i<pts.length;i++){
+      len += Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y);
+    }
+    return len;
+  }
+
+  stage.addEventListener('pointerdown', (e)=>{
+    if(sliced) return;
+    dragging = true;
+    points = [{x:e.clientX, y:e.clientY}];
+  });
+  stage.addEventListener('pointermove', (e)=>{
+    if(!dragging || sliced) return;
+    points.push({x:e.clientX, y:e.clientY});
+    if(points.length > 40) points.shift();
+    drawTrail();
+  });
+  window.addEventListener('pointerup', (e)=>{
+    if(!dragging || sliced) return;
+    dragging = false;
+    points.push({x:e.clientX, y:e.clientY});
+    const len = pathLength(points);
+    const hit = pathHitsOrange(points);
+    const isTap = len < 12; // simple click/tap fallback
+
+    if(hit && (len > 30 || isTap)){
+      const first = points[0], last = points[points.length-1];
+      let angle = Math.atan2(last.y-first.y, last.x-first.x) * 180/Math.PI;
+      if(isTap) angle = -20; // pleasant default diagonal for a plain tap
+      sliceOrange(angle, {x:(first.x+last.x)/2, y:(first.y+last.y)/2});
+    }
+    clearTrailSoon();
+  });
+
+  function spawnDroplets(x, y){
+    for(let i=0;i<14;i++){
+      const d = document.createElement('div');
+      d.className = 'droplet';
+      const a = Math.random()*Math.PI*2;
+      const dist = 40 + Math.random()*70;
+      d.style.setProperty('--tx', Math.cos(a)*dist + 'px');
+      d.style.setProperty('--ty', Math.sin(a)*dist + 'px');
+      d.style.left = x + 'px';
+      d.style.top = y + 'px';
+      document.body.appendChild(d);
+      setTimeout(()=>d.remove(), 750);
+    }
+  }
+
+  function spawnFlash(x, y){
+    const f = document.createElement('div');
+    f.className = 'flash';
+    const size = 220;
+    f.style.width = size+'px';
+    f.style.height = size+'px';
+    f.style.left = x+'px';
+    f.style.top = y+'px';
+    document.body.appendChild(f);
+    setTimeout(()=>f.remove(), 550);
+  }
+
+  function sliceOrange(angleDeg, point){
+    sliced = true;
+    const rig = document.getElementById('orange-rig');
+    rig.classList.add('sliced');
+
+    const left = rig.querySelector('.half.left');
+    const right = rig.querySelector('.half.right');
+    const flyDist = 90;
+    const rad = (angleDeg+90) * Math.PI/180; // perpendicular to slice direction
+    const fx = Math.cos(rad)*flyDist + 'px';
+    const fy = Math.sin(rad)*flyDist + 'px';
+    [left,right].forEach(h=>{
+      h.style.setProperty('--fx', fx);
+      h.style.setProperty('--fy', fy);
+      h.style.transform = `rotate(${angleDeg}deg)`;
+      h.style.opacity = '1';
+      h.classList.add('fly');
+    });
+
+    spawnDroplets(point.x, point.y);
+    spawnFlash(point.x, point.y);
+
+    document.getElementById('gate-text').style.opacity = '0';
+
+    setTimeout(revealSite, 850);
+  }
+
+  function revealSite(){
+    document.getElementById('stage').classList.add('leaving');
+    const site = document.getElementById('site');
+    site.hidden = false;
+    requestAnimationFrame(()=> site.classList.add('show'));
+  }
+
+  document.getElementById('skip-link').addEventListener('click', ()=>{
+    if(sliced) return;
+    sliced = true;
+    revealSite();
+  });
+
+})();
+</script>
+</body>
+</html>
