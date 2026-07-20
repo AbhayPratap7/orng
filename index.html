@@ -1,30 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ORNG.BNB — slice to enter</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>orang.bnb — slice to enter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-
+  /* ============================================================
+     GATE (slice-to-enter intro) — variables prefixed --gate-*
+     ============================================================ */
   :root{
-    --cream:#fffdf8;
-    --ink:#241a12;
-    --orange:#f2801f;
-    --orange-deep:#d9660e;
-    --peel:#e8791c;
-    --flesh:#ffc24d;
-    --leaf:#3d7a34;
-    --purple:#6b3fa0;
+    --gate-cream:#fffdf8;
+    --gate-ink:#241a12;
+    --gate-orange:#f2801f;
+    --gate-orange-deep:#d9660e;
+    --gate-peel:#e8791c;
+    --gate-flesh:#ffc24d;
+    --gate-leaf:#3d7a34;
   }
 
   *{ box-sizing:border-box; }
-  html,body{
-    margin:0; padding:0; width:100%; height:100%;
-    background:var(--cream);
+  html,body{ margin:0; padding:0; width:100%; }
+  html.locked, body.locked{ overflow:hidden; height:100%; }
+  body{
     font-family:'Inter', sans-serif;
-    color:var(--ink);
-    overflow:hidden;
   }
 
   #stage{
@@ -32,11 +32,12 @@
     overflow:hidden;
     touch-action:none;
     cursor: crosshair;
+    background:var(--gate-cream);
+    z-index:100;
     transition: opacity .6s ease, filter .6s ease;
   }
   #stage.leaving{ opacity:0; filter:blur(6px); pointer-events:none; }
 
-  /* ---- center orange rig ---- */
   #orange-rig{
     position:absolute;
     left:50%; top:50%;
@@ -69,23 +70,16 @@
     opacity:0;
     pointer-events:none;
   }
-  .half .peel{
-    position:absolute; inset:0; border-radius:50%;
-    background:var(--peel);
-  }
+  .half .peel{ position:absolute; inset:0; border-radius:50%; background:var(--gate-peel); }
   .half .flesh{
     position:absolute; inset:6%; border-radius:50%;
     background:
       repeating-conic-gradient(from 0deg, rgba(255,255,255,.35) 0deg 2deg, transparent 2deg 16deg),
-      radial-gradient(circle at 50% 45%, #fff2cf, var(--flesh) 55%, #ff9d2e 100%);
+      radial-gradient(circle at 50% 45%, #fff2cf, var(--gate-flesh) 55%, #ff9d2e 100%);
   }
   .half.left  { clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%); }
   .half.right { clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%); }
-  .half.fly{
-    animation-duration:.75s;
-    animation-timing-function: cubic-bezier(.2,.8,.3,1);
-    animation-fill-mode: forwards;
-  }
+  .half.fly{ animation-duration:.75s; animation-timing-function: cubic-bezier(.2,.8,.3,1); animation-fill-mode: forwards; }
   .half.left.fly{ animation-name: flyLeft; }
   .half.right.fly{ animation-name: flyRight; }
   @keyframes flyLeft{
@@ -102,7 +96,7 @@
     background: radial-gradient(circle, #ffe19a, #f2801f);
     pointer-events:none;
     animation: burst .7s ease-out forwards;
-    z-index:20;
+    z-index:120;
   }
   @keyframes burst{
     0%{ transform: translate(0,0) scale(1); opacity:1; }
@@ -115,14 +109,13 @@
     pointer-events:none;
     transform: translate(-50%,-50%) scale(0);
     animation: flash .5s ease-out forwards;
-    z-index:19;
+    z-index:119;
   }
   @keyframes flash{
     0%{ transform: translate(-50%,-50%) scale(0); opacity:.9; }
     100%{ transform: translate(-50%,-50%) scale(2.6); opacity:0; }
   }
 
-  /* ---- gate text ---- */
   #gate-text{
     position:absolute; left:50%; bottom:9%;
     transform:translateX(-50%);
@@ -131,81 +124,425 @@
     transition: opacity .4s ease;
   }
   #gate-text .hint{
-    margin:0 0 10px;
-    font-size:13px;
-    letter-spacing:.35em;
-    text-transform:uppercase;
-    color:#7a5a33;
-    font-weight:500;
+    margin:0 0 10px; font-size:13px; letter-spacing:.35em;
+    text-transform:uppercase; color:#7a5a33; font-weight:500;
   }
   #gate-text .logo{
-    margin:0;
-    font-family:'Fredoka', sans-serif;
-    font-weight:600;
-    font-size:clamp(28px, 5vw, 44px);
-    letter-spacing:.14em;
-    color:var(--orange-deep);
+    margin:0; font-family:'Fredoka', sans-serif; font-weight:600;
+    font-size:clamp(28px, 5vw, 44px); letter-spacing:.14em; color:var(--gate-orange-deep);
   }
   #skip-link{
-    margin-top:14px;
+    margin:14px auto 0; display:block;
     background:none; border:none;
-    font-family:'Inter', sans-serif;
-    font-size:12px;
-    color:#a98a5f;
-    text-decoration:underline;
-    cursor:pointer;
-    display:block;
-    margin-left:auto; margin-right:auto;
+    font-family:'Inter', sans-serif; font-size:12px; color:#a98a5f;
+    text-decoration:underline; cursor:pointer;
+  }
+  #sound-toggle{
+    position:absolute; top:20px; right:20px; z-index:6;
+    background:rgba(255,255,255,0.6); border:1px solid var(--gate-orange-deep);
+    color:var(--gate-orange-deep); border-radius:999px;
+    font-family:'Inter',sans-serif; font-size:11px; font-weight:600;
+    padding:6px 12px; cursor:pointer; letter-spacing:.04em;
   }
 
-  #slice-canvas{
-    position:fixed; inset:0; z-index:15; pointer-events:none;
-  }
-
-  /* ---- revealed site ---- */
-  #site{
-    position:fixed; inset:0;
-    background:var(--cream);
-    display:flex; align-items:center; justify-content:center;
-    opacity:0;
-    transition: opacity .8s ease;
-    text-align:center;
-    padding:24px;
-  }
-  #site{ pointer-events:none; }
-  #site.show{ opacity:1; pointer-events:auto; }
-  #site .inner{ max-width:560px; }
-  #site h1{
-    font-family:'Fredoka', sans-serif;
-    font-size:clamp(32px, 6vw, 56px);
-    color:var(--orange-deep);
-    margin:0 0 14px;
-    letter-spacing:.04em;
-  }
-  #site p{
-    font-size:16px; line-height:1.6; color:#5a4530;
-    margin:0 0 26px;
-  }
-  #site button.cta{
-    background:var(--orange);
-    color:#fff; border:none;
-    font-family:'Inter', sans-serif;
-    font-weight:600; font-size:14px;
-    letter-spacing:.06em; text-transform:uppercase;
-    padding:14px 30px; border-radius:999px;
-    cursor:pointer;
-  }
+  #slice-canvas{ position:fixed; inset:0; z-index:110; pointer-events:none; }
 
   @media (prefers-reduced-motion: reduce){
     #glow-ring{ animation:none; }
-    #orange{ transition:none; }
+  }
+
+  /* ============================================================
+     SITE (orang.bnb homepage) — variables as before
+     ============================================================ */
+  :root{
+    --cream:#F4EEE1;
+    --cream-2:#EFE7D6;
+    --orange:#D96430;
+    --orange-dark:#C2551F;
+    --green:#1E2F22;
+    --ink:#1B241C;
+    --white:#FFFCF6;
+    --sage:#93A388;
+    --tan:#E3C79B;
+
+    --pad: clamp(14px, 3vw, 48px);
+    --gap: clamp(8px, 1.6vw, 24px);
+
+    --fs-logo: clamp(12px, 1.6vw, 20px);
+    --fs-nav: clamp(8px, 1vw, 15px);
+    --fs-btn: clamp(8px, 1vw, 14px);
+    --fs-hero: clamp(22px, 5.2vw, 64px);
+    --fs-sub: clamp(9px, 1.15vw, 16px);
+    --fs-eyebrow: clamp(8px, 0.95vw, 13px);
+    --fs-h2: clamp(15px, 2.6vw, 34px);
+    --fs-stat: clamp(20px, 4.4vw, 44px);
+    --fs-body: clamp(8.5px, 1.05vw, 15px);
+    --fs-small: clamp(7.5px, 0.85vw, 12px);
+    --fs-card-title: clamp(9px, 1.15vw, 16px);
+  }
+
+  #site{
+    background:var(--cream);
+    color:var(--ink);
+    width:100%;
+    opacity:0;
+    transition: opacity .8s ease;
+  }
+  #site.show{ opacity:1; }
+
+  #site img{display:block; width:100%; height:100%; object-fit:cover;}
+  #site a{color:inherit; text-decoration:none;}
+  #site ul{list-style:none; margin:0; padding:0;}
+  .wrap{max-width:1600px; margin:0 auto; position:relative;}
+
+  #site h1, #site h2, #site h3, #site .display{
+    font-family:'Archivo Black', sans-serif;
+    text-transform:uppercase;
+    line-height:0.98;
+    letter-spacing:-0.01em;
+  }
+
+  .eyebrow{
+    font-size:var(--fs-eyebrow);
+    font-weight:700;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+  }
+
+  .arrow-link{
+    display:inline-flex;
+    align-items:center;
+    gap:clamp(4px,0.8vw,10px);
+    font-size:var(--fs-small);
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .arrow-link svg{width:clamp(10px,1.3vw,18px); flex-shrink:0;}
+
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: clamp(10px,1.6vw,20px) var(--pad);
+    background:var(--cream);
+    position:relative;
+    z-index:20;
+    gap:clamp(6px,1vw,20px);
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:clamp(4px,0.6vw,8px);
+    font-weight:700;
+    font-size:var(--fs-logo);
+    color:var(--orange);
+    flex-shrink:0;
+  }
+  .logo .dot{
+    width:clamp(14px,1.8vw,26px);
+    height:clamp(14px,1.8vw,26px);
+    border-radius:50%;
+    background:var(--orange);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .logo .dot svg{width:60%; height:60%;}
+  nav{
+    display:flex; align-items:center;
+    gap:clamp(8px,1.6vw,32px);
+    font-size:var(--fs-nav); font-weight:600; flex-wrap:nowrap;
+  }
+  nav a{white-space:nowrap;}
+  .book-btn{
+    display:flex; align-items:center;
+    gap:clamp(4px,0.6vw,8px);
+    background:var(--orange); color:var(--white);
+    padding: clamp(6px,0.9vw,12px) clamp(10px,1.6vw,22px);
+    border-radius:999px; font-weight:700; font-size:var(--fs-btn);
+    white-space:nowrap; flex-shrink:0;
+  }
+  .book-btn svg{width:clamp(9px,1vw,14px);}
+
+  .hero{ display:grid; grid-template-columns: 30% 45% 25%; }
+  .hero-left{
+    padding: clamp(16px,3vw,50px) var(--pad);
+    display:flex; flex-direction:column; justify-content:center;
+    position:relative;
+    z-index:3; /* FIX: keep hero text above the hero image so it never gets hidden behind it */
+  }
+  .hero-left h1{ font-size:var(--fs-hero); }
+  .hero-left h1 .line2{color:var(--orange);}
+  .hero-left .rule{
+    width:clamp(24px,3.5vw,60px); height:3px; background:var(--orange);
+    margin: clamp(8px,1.4vw,20px) 0;
+  }
+  .hero-left p{
+    font-size:var(--fs-sub); line-height:1.6; max-width:32ch;
+    margin-bottom: clamp(10px,2vw,28px); color:#3a3f3a;
+  }
+  .badge{
+    position:absolute; bottom:clamp(-30px,-3vw,-10px); left:50%;
+    transform:translateX(-30%);
+    width:clamp(70px,10vw,150px); height:clamp(70px,10vw,150px);
+    border-radius:50%; border:1px solid var(--orange); background:var(--cream);
+    display:flex; align-items:center; justify-content:center; z-index:5; padding:6%;
+  }
+  .badge svg{width:100%; height:100%;}
+
+  .hero-img{ position:relative; overflow:hidden; min-height:clamp(220px,42vw,640px); z-index:1; }
+  .hero-img img{width:100%; height:100%; object-fit:cover;}
+
+  .hero-side{ display:flex; flex-direction:column; position:relative; z-index:2; }
+  .side-block{
+    padding: clamp(10px,1.8vw,26px) var(--pad);
+    flex:1; display:flex; flex-direction:column; justify-content:center;
+    gap:clamp(6px,1vw,14px);
+    border-bottom:1px solid rgba(0,0,0,0.08);
+  }
+  .side-block.orange{ background:var(--orange); color:var(--white); border-bottom:none; }
+  .side-block .num{ font-size:var(--fs-eyebrow); font-weight:700; opacity:0.85; }
+  .side-block h3{ font-size:clamp(11px,1.7vw,22px); }
+  .side-block .big-stat{
+    font-size:var(--fs-stat); color:var(--orange);
+    font-family:'Archivo Black',sans-serif; line-height:0.95;
+  }
+  .side-block p{ font-size:var(--fs-small); line-height:1.55; max-width:34ch; opacity:0.9; }
+  .side-block .thumb{
+    width:100%; height:clamp(40px,7vw,110px); border-radius:4px; overflow:hidden; margin-bottom:2px;
+  }
+  .side-block .arrow-link{color:inherit;}
+  .side-leaf{width:clamp(14px,2vw,26px); opacity:0.9;}
+
+  .features{
+    background:var(--orange); display:grid; grid-template-columns:repeat(4,1fr); color:var(--white);
+  }
+  .feature{
+    padding: clamp(16px,3vw,44px) var(--pad);
+    border-right:1px solid rgba(255,255,255,0.25);
+    display:flex; flex-direction:column; gap:clamp(6px,1.2vw,16px);
+  }
+  .feature:last-child{border-right:none;}
+  .feature svg{width:clamp(20px,3.2vw,42px); height:clamp(20px,3.2vw,42px);}
+  .feature h4{
+    font-family:'Archivo Black',sans-serif; text-transform:uppercase;
+    font-size:var(--fs-card-title); letter-spacing:0.02em;
+  }
+  .feature p{ font-size:var(--fs-small); line-height:1.5; opacity:0.92; }
+
+  .curated{
+    display:grid; grid-template-columns:38% 62%;
+    padding: clamp(24px,4.5vw,70px) var(--pad);
+    gap: var(--gap); align-items:center;
+  }
+  .curated-text h2{ font-size:clamp(18px,3.6vw,46px); }
+  .curated-text h2 .accent{color:var(--orange);}
+  .curated-text .arrow-link{margin-top:clamp(10px,1.8vw,26px);}
+  .curated-grid{
+    display:grid; grid-template-columns:1.4fr 1fr; gap:var(--gap);
+    height:clamp(160px,26vw,380px);
+  }
+  .curated-grid .big{border-radius:4px; overflow:hidden;}
+  .curated-grid .stack{display:grid; grid-template-rows:1fr 1fr; gap:var(--gap);}
+  .curated-grid .stack div{border-radius:4px; overflow:hidden;}
+
+  .destinations{ display:grid; grid-template-columns: 22% repeat(4, 1fr); }
+  .dest-intro{
+    background:var(--green); color:var(--white);
+    padding: clamp(16px,2.6vw,36px) var(--pad);
+    display:flex; flex-direction:column; justify-content:center; gap:clamp(8px,1.2vw,16px);
+  }
+  .dest-intro h2{font-size:clamp(15px,2.4vw,30px);}
+  .dest-intro h2 .accent{color:var(--orange);}
+  .dest-intro p{font-size:var(--fs-small); line-height:1.55; opacity:0.85; max-width:26ch;}
+  .dest-card{
+    position:relative;
+    padding: clamp(14px,2.2vw,30px) clamp(10px,1.6vw,22px);
+    display:flex; flex-direction:column; justify-content:flex-end; gap:clamp(4px,0.8vw,10px);
+    min-height:clamp(160px,22vw,320px);
+    border-right:1px solid rgba(0,0,0,0.06);
+  }
+  .dest-card:last-child{border-right:none;}
+  .dest-card svg{width:clamp(30px,4.8vw,64px); height:clamp(24px,3.6vw,48px); margin-bottom:auto;}
+  .dest-card h4{font-size:var(--fs-card-title); font-family:'Archivo Black',sans-serif; text-transform:uppercase;}
+  .dest-card p{font-size:var(--fs-small); line-height:1.4; opacity:0.85; max-width:22ch;}
+  .dest-card .arrow-link{margin-top:clamp(4px,0.8vw,10px);}
+  .dest-1{background:var(--orange); color:var(--white);}
+  .dest-2{background:var(--sage); color:var(--ink);}
+  .dest-3{background:var(--tan); color:var(--ink);}
+  .dest-4{background:var(--cream-2); color:var(--ink);}
+
+  .dest-card.coming-soon{ opacity:0.94; }
+  .dest-card.coming-soon > *{ filter:none; }
+  .coming-soon-badge{
+    position:absolute; top:clamp(12px,1.8vw,20px); right:clamp(12px,1.6vw,20px);
+    background:var(--ink); color:var(--white);
+    font-family:'Inter', sans-serif; font-weight:700; font-size:var(--fs-small);
+    letter-spacing:0.08em; text-transform:uppercase;
+    padding: clamp(4px,0.6vw,7px) clamp(8px,1.2vw,14px);
+    border-radius:999px; z-index:2;
+  }
+  .dest-card.dest-1 .coming-soon-badge{ background:var(--white); color:var(--orange); }
+
+  .newsletter{
+    display:grid; grid-template-columns: 26% 74%; align-items:center;
+    padding: clamp(18px,3vw,40px) var(--pad); gap:var(--gap);
+    border-bottom:1px solid rgba(0,0,0,0.08);
+  }
+  .news-img{ position:relative; height:clamp(60px,9vw,140px); }
+  .news-img img{
+    width:clamp(60px,9vw,140px); height:clamp(60px,9vw,140px); border-radius:50%; object-fit:cover;
+  }
+  .news-form{ display:grid; grid-template-columns: auto 1fr auto; align-items:center; gap:var(--gap); }
+  .news-form .label h4{font-size:var(--fs-card-title); font-family:'Archivo Black',sans-serif; text-transform:uppercase;}
+  .news-form .label p{font-size:var(--fs-small); opacity:0.75; max-width:26ch; margin-top:4px;}
+  .news-form input{
+    width:100%; border:1px solid #c9c2ae; background:transparent;
+    padding: clamp(8px,1.3vw,16px) clamp(10px,1.6vw,20px);
+    border-radius:6px; font-size:var(--fs-body); font-family:inherit; color:var(--ink);
+  }
+  .news-form button{
+    display:flex; align-items:center; gap:6px;
+    background:var(--orange); color:var(--white); border:none;
+    padding: clamp(8px,1.3vw,16px) clamp(12px,2vw,26px);
+    border-radius:6px; font-weight:700; font-size:var(--fs-btn); white-space:nowrap; cursor:pointer;
+  }
+  .news-form button svg{width:clamp(9px,1vw,14px);}
+
+  #site footer{padding: clamp(18px,3vw,44px) var(--pad) 0;}
+  .footer-grid{
+    display:grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap:var(--gap);
+    padding-bottom:clamp(16px,2.6vw,36px);
+  }
+  .footer-brand .logo{margin-bottom:clamp(6px,1vw,14px);}
+  .footer-brand p{font-size:var(--fs-small); line-height:1.6; opacity:0.8; max-width:26ch; margin-bottom:clamp(8px,1.2vw,16px);}
+  .socials{display:flex; gap:clamp(6px,1vw,14px);}
+  .socials a{
+    width:clamp(20px,2.6vw,32px); height:clamp(20px,2.6vw,32px);
+    border-radius:50%; border:1px solid var(--ink);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .socials svg{width:45%;}
+  #site footer h5{
+    font-size:var(--fs-eyebrow); font-weight:700; letter-spacing:0.08em; margin-bottom:clamp(8px,1.2vw,16px);
+  }
+  #site footer .footer-grid li, #site footer .footer-grid p.contact-line{
+    font-size:var(--fs-small); line-height:2.1; opacity:0.85;
+  }
+  .footer-bar{
+    background:var(--orange); color:var(--white);
+    display:flex; justify-content:space-between; align-items:center;
+    padding: clamp(8px,1.2vw,16px) var(--pad); font-size:var(--fs-small); gap:var(--gap); flex-wrap:wrap;
+  }
+  .footer-bar span{display:flex; align-items:center; gap:4px;}
+  .footer-bar svg{width:11px;}
+
+  hr.thin{border:none; border-top:1px solid rgba(0,0,0,0.1);}
+
+  /* ============================================================
+     BOOKING MODAL
+     ============================================================ */
+  #booking-overlay{
+    position:fixed; inset:0; z-index:200;
+    background:rgba(27,36,28,0.55);
+    display:flex; align-items:center; justify-content:center;
+    padding: clamp(12px,3vw,40px);
+    opacity:0; pointer-events:none;
+    transition: opacity .3s ease;
+  }
+  #booking-overlay.open{ opacity:1; pointer-events:auto; }
+
+  #booking-modal{
+    background:var(--cream);
+    width:min(880px, 100%);
+    max-height:88vh;
+    overflow-y:auto;
+    border-radius:14px;
+    position:relative;
+    transform: translateY(16px) scale(.98);
+    transition: transform .35s cubic-bezier(.2,.8,.3,1);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+  }
+  #booking-overlay.open #booking-modal{ transform: translateY(0) scale(1); }
+
+  #booking-close{
+    position:absolute; top:clamp(10px,1.6vw,18px); right:clamp(10px,1.6vw,18px);
+    width:clamp(30px,3.6vw,38px); height:clamp(30px,3.6vw,38px);
+    border-radius:50%; border:1px solid rgba(27,36,28,0.15);
+    background:var(--white); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    z-index:2;
+  }
+  #booking-close svg{width:44%; height:44%;}
+
+  .booking-head{
+    background:var(--green); color:var(--white);
+    padding: clamp(20px,3.4vw,40px) clamp(20px,3.4vw,40px) clamp(16px,2.6vw,28px);
+    border-radius:14px 14px 0 0;
+  }
+  .booking-head .eyebrow{color:var(--orange); margin-bottom:6px;}
+  .booking-head h2{
+    font-family:'Archivo Black', sans-serif; text-transform:uppercase;
+    font-size:clamp(20px,3.4vw,34px); line-height:1;
+  }
+  .booking-head p{
+    font-size:var(--fs-small); opacity:0.75; margin-top:8px; max-width:46ch;
+  }
+  .booking-head .prop-meta{
+    display:flex; align-items:center; gap:10px; margin-top:clamp(10px,1.6vw,18px);
+    font-size:var(--fs-small); opacity:0.85;
+  }
+  .booking-head .prop-meta svg{width:14px;}
+
+  .room-list{
+    padding: clamp(18px,3vw,34px);
+    display:grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap);
+  }
+  .room-card{
+    background:var(--white);
+    border:1px solid rgba(27,36,28,0.1);
+    border-radius:10px;
+    padding: clamp(14px,2.2vw,24px);
+    display:flex; flex-direction:column; gap:8px;
+    transition: border-color .2s ease, transform .2s ease;
+  }
+  .room-card:hover{ border-color:var(--orange); transform:translateY(-2px); }
+  .room-card .room-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .room-card h4{
+    font-family:'Archivo Black', sans-serif; text-transform:uppercase;
+    font-size:var(--fs-card-title); line-height:1.15;
+  }
+  .room-card .room-tag{
+    font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    background:var(--cream-2); color:var(--orange-dark);
+    padding:3px 9px; border-radius:999px; white-space:nowrap;
+  }
+  .room-card p.room-desc{ font-size:var(--fs-small); opacity:0.75; line-height:1.5; }
+  .room-card .room-specs{
+    display:flex; gap:12px; font-size:var(--fs-small); opacity:0.8; margin-top:2px;
+  }
+  .room-card .room-specs span{display:flex; align-items:center; gap:4px;}
+  .room-card .room-specs svg{width:13px;}
+  .room-card .room-select{
+    margin-top:auto; align-self:flex-start;
+    display:flex; align-items:center; gap:6px;
+    background:var(--orange); color:var(--white); border:none;
+    padding: 9px 18px; border-radius:999px; font-weight:700; font-size:var(--fs-btn);
+    cursor:pointer;
+  }
+  .room-card .room-select svg{width:11px;}
+
+  @media (max-width:640px){
+    .room-list{ grid-template-columns: 1fr; }
   }
 </style>
 </head>
-<body>
+<body class="locked">
 
+<!-- ===================== SLICE-TO-ENTER GATE ===================== -->
 <div id="stage">
-  <!-- center orange -->
+  <button id="sound-toggle" aria-pressed="true">🔊 SOUND ON</button>
+
   <div id="orange-rig">
     <div id="glow-ring"></div>
     <div id="orange"></div>
@@ -215,28 +552,343 @@
 
   <div id="gate-text">
     <p class="hint">go on&hellip; slice me to get in!</p>
-    <h1 class="logo">ORNG.BNB</h1>
+    <h1 class="logo">ORANG.BNB</h1>
     <button id="skip-link">enter without slicing</button>
   </div>
 
   <canvas id="slice-canvas"></canvas>
 </div>
 
-<div id="site" hidden>
-  <div class="inner">
-    <h1>Welcome to ORNG.BNB</h1>
-    <p>You sliced your way in. This is where the rest of the site picks up — swap this block out for your real homepage content.</p>
-    <button class="cta">Explore the shop</button>
+<!-- ===================== ORANG.BNB SITE ===================== -->
+<div id="site">
+  <div class="wrap">
+
+    <header>
+      <div class="logo">
+        <span class="dot">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 2 3 2.5 3 5.5S13.5 13 12 13s-3-1.5-3-4.5S11 5 12 3Z" fill="#fff"/><path d="M12 13v8" stroke="#fff" stroke-width="1.4"/></svg>
+        </span>
+        orang.bnb
+      </div>
+      <nav>
+        <a href="#">Stays</a>
+        <a href="#">Experiences</a>
+        <a href="#">About Us</a>
+        <a href="#">Locations</a>
+        <a href="#">Blog</a>
+        <a href="#">Contact</a>
+      </nav>
+      <a href="#" id="book-btn-header" class="book-btn">Book Your Stay
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </header>
+
+    <section class="hero">
+      <div class="hero-left">
+        <h1>STAY<br><span class="line2">DIFFERENT.</span><br>STAY<br><span class="line2">ORANGE.</span></h1>
+        <div class="rule"></div>
+        <p>Handpicked stays with stories. Local experiences that connect. Comfort that feels like home.</p>
+        <a href="#" class="arrow-link">DISCOVER MORE
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <div class="badge">
+          <svg viewBox="0 0 120 120" fill="none">
+            <circle cx="60" cy="60" r="58" stroke="#D96430" stroke-width="1"/>
+            <path id="curve" d="M 20 40 A 45 45 0 0 1 100 40" fill="none"/>
+            <text font-size="7.5" fill="#D96430" font-family="Inter" letter-spacing="1.5" font-weight="700">
+              <textPath href="#curve" startOffset="2%">MORE THAN A STAY,</textPath>
+            </text>
+            <path id="curve2" d="M 100 80 A 45 45 0 0 1 20 80" fill="none"/>
+            <text font-size="7.5" fill="#D96430" font-family="Inter" letter-spacing="1.5" font-weight="700">
+              <textPath href="#curve2" startOffset="2%">IT'S AN EXPERIENCE</textPath>
+            </text>
+            <path d="M45 60c3-8 10-13 18-13s15 5 18 13" stroke="#D96430" stroke-width="1.4"/>
+            <circle cx="60" cy="60" r="3" fill="#D96430"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="hero-img">
+        <!-- SAMPLE IMAGE — replace with your own -->
+        <img src="Aesthetic Men's Room Makeover _ Modern Wall Decor & Cozy Setup.jpeg" alt="Sample palace hero image — replace with your own">
+      </div>
+
+      <div class="hero-side">
+        <div class="side-block orange">
+          <span class="num">01</span>
+          <h3>Our Story</h3>
+          <p>We're a collective of dreamers and doers, curating spaces that blend comfort, culture and character.</p>
+          <a href="#" class="arrow-link">READ MORE
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+        <div class="side-block">
+          <span class="num" style="color:var(--orange)">02</span>
+          <p class="eyebrow" style="color:var(--orange)">Our Values</p>
+          <h3>We are inspired by the spirit of the</h3>
+          <div class="big-stat">70–80s</div>
+          <p>Our vision is to bring timeless connection to the present, creating stays that feel warm and real.</p>
+          <a href="#" class="arrow-link" style="color:var(--ink)">LEARN MORE
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+        <div class="side-block">
+          <span class="num" style="color:var(--orange)">03</span>
+          <p class="eyebrow" style="color:var(--orange)">Locations</p>
+          <div class="thumb"><img src="Hawa mahal.jpeg" alt="Sample location image"></div>
+          <p>From royal cities to peaceful getaways, find us in the most inspiring locations.</p>
+          <a href="#" class="arrow-link" style="color:var(--ink)">EXPLORE ALL LOCATIONS
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+        <div class="side-block">
+          <span class="num" style="color:var(--orange)">04</span>
+          <p class="eyebrow" style="color:var(--orange)">Experiences</p>
+          <div class="thumb"><img src="Orange Texture Photography for Ecodenta.jpeg" alt="Sample experience image"></div>
+          <p>It's not just where you stay, it's what you experience.</p>
+          <a href="#" class="arrow-link" style="color:var(--ink)">VIEW EXPERIENCES
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="feature">
+        <svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="1.6"><path d="M6 22 24 8l18 14"/><path d="M10 20v18h28V20"/><path d="M19 38v-9h10v9"/></svg>
+        <h4>Unique Stays</h4>
+        <p>Curated homes with soul & story.</p>
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="1.6"><path d="M10 26v-6a4 4 0 0 1 4-4h20a4 4 0 0 1 4 4v6"/><path d="M8 26h32v6a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-6Z"/><path d="M10 34v4M38 34v4"/></svg>
+        <h4>Comfort First</h4>
+        <p>Thoughtful spaces for a relaxed stay.</p>
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="1.6"><rect x="6" y="14" width="36" height="24" rx="3"/><path d="M18 14l3-5h6l3 5"/><circle cx="24" cy="26" r="7"/></svg>
+        <h4>Local Experiences</h4>
+        <p>Handpicked activities that connect you with the heart of the place.</p>
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="1.6"><path d="M24 6c8 4 12 12 12 20a12 12 0 0 1-24 0c0-8 4-16 12-20Z"/><path d="M24 20v18"/></svg>
+        <h4>Warm Hospitality</h4>
+        <p>We're here for you, before, during and after your stay.</p>
+      </div>
+    </section>
+
+    <section class="curated">
+      <div class="curated-text">
+        <h2>Curated<br><span class="accent">Experiences</span><br>for every<br>kind of<br>traveler</h2>
+        <a href="#" class="arrow-link">EXPLORE EXPERIENCES
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+      <div class="curated-grid">
+        <div class="big"><img src="Konark Wheel.jpeg" alt="Sample bicycle image"></div>
+        <div class="stack">
+          <div><img src="_ (3).jpeg" alt="Sample chai pouring image"></div>
+          <div><img src="Minimal South Asian Desktop Wallpaper _ Neutral Desi Aesthetic Background.jpeg" alt="Sample vinyl record image"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="destinations">
+      <div class="dest-intro">
+        <p class="eyebrow" style="color:var(--orange)">Destinations</p>
+        <h2>Places that <span class="accent">stay</span> with you, forever.</h2>
+        <p>Wander through heritage, nature and culture. Make memories that last a lifetime.</p>
+        <a href="#" class="arrow-link">EXPLORE DESTINATIONS
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+      <div class="dest-card dest-1">
+        <svg viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M32 6c3 3 3 7 0 10-3-3-3-7 0-10Z"/><path d="M14 44V22l8-6 8 6v22M34 44V18l8-7 8 7v26"/><rect x="4" y="44" width="56" height="2"/></svg>
+        <h4>Jaipur</h4>
+        <p>Royal heritage and timeless beauty.</p>
+        <a href="#" class="arrow-link">EXPLORE <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+      <div class="dest-card dest-2 coming-soon">
+        <span class="coming-soon-badge">Coming Soon</span>
+        <svg viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M32 8a10 10 0 0 1 10 10v24H22V18A10 10 0 0 1 32 8Z"/><path d="M10 44h44M14 30h6M44 30h6"/></svg>
+        <h4>Udaipur</h4>
+        <p>Romance, lakes and quiet luxury.</p>
+      </div>
+      <div class="dest-card dest-3 coming-soon">
+        <span class="coming-soon-badge">Coming Soon</span>
+        <svg viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 44V20l6-4 6 4v24M28 44V14l8-6 8 6v30M32 44V22l6-4 6 4v22"/><rect x="4" y="44" width="56" height="2"/></svg>
+        <h4>Jodhpur</h4>
+        <p>Blue streets, strong stories.</p>
+      </div>
+      <div class="dest-card dest-4 coming-soon">
+        <span class="coming-soon-badge">Coming Soon</span>
+        <svg viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="32" cy="14" r="6"/><path d="M6 40l10-14 8 8 6-10 10 16H6Z"/><path d="M44 40l6-8 8 8H44Z"/></svg>
+        <h4>Pushkar</h4>
+        <p>Spiritual vibes and desert skies.</p>
+      </div>
+    </section>
+
+    <section class="newsletter">
+      <div class="news-img">
+        <!-- SAMPLE IMAGE — replace with your own -->
+        <img src="_ (4).jpeg" alt="Sample mug image">
+      </div>
+      <div class="news-form">
+        <div class="label">
+          <h4>Stay in the loop</h4>
+          <p>Get exclusive offers, travel tips and stories from the road.</p>
+        </div>
+        <input type="email" placeholder="Enter your email">
+        <button>SUBSCRIBE
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <span class="dot">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 2 3 2.5 3 5.5S13.5 13 12 13s-3-1.5-3-4.5S11 5 12 3Z" fill="#fff"/><path d="M12 13v8" stroke="#fff" stroke-width="1.4"/></svg>
+            </span>
+            orang.bnb
+          </div>
+          <p style="font-weight:700; text-transform:uppercase; font-size:var(--fs-small); opacity:1; margin-bottom:4px;">Stay Different.</p>
+          <p>Curated stays. Genuine experiences. Warm hospitality. Different is good.</p>
+          <div class="socials">
+            <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
+            <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 7h2V3h-2a5 5 0 0 0-5 5v3H8v4h2v8h4v-8h3l1-4h-4V8a1 1 0 0 1 1-1Z"/></svg></a>
+            <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 5.9c-.7.3-1.5.6-2.3.7.8-.5 1.5-1.3 1.8-2.3-.8.5-1.7.8-2.6 1a4.1 4.1 0 0 0-7 3.7A11.6 11.6 0 0 1 3.4 4.6a4.1 4.1 0 0 0 1.3 5.5c-.6 0-1.3-.2-1.8-.5v.1c0 2 1.4 3.6 3.3 4a4.2 4.2 0 0 1-1.8.1 4.1 4.1 0 0 0 3.8 2.9A8.3 8.3 0 0 1 2 18.4a11.6 11.6 0 0 0 6.3 1.9c7.5 0 11.7-6.3 11.7-11.7v-.5c.8-.6 1.5-1.3 2-2.2Z"/></svg></a>
+            <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 0 0-3.2 17.4c0-1.3 0-2.9.3-4.3l1.5-6.4s-.4-.8-.4-1.9c0-1.8 1-3.1 2.3-3.1 1.1 0 1.6.8 1.6 1.8 0 1.1-.7 2.7-1 4.2-.3 1.2.6 2.2 1.8 2.2 2.1 0 3.7-2.3 3.7-5.5 0-2.9-2-4.9-5-4.9-3.4 0-5.4 2.5-5.4 5.2 0 1 .4 2.1.9 2.7a.4.4 0 0 1 .1.4l-.3 1.3c-.1.2-.2.3-.4.2-1.5-.7-2.4-2.9-2.4-4.7 0-3.8 2.8-7.4 8-7.4 4.2 0 7.4 3 7.4 7 0 4.2-2.6 7.5-6.3 7.5-1.2 0-2.4-.6-2.8-1.4l-.8 2.9c-.3 1-1 2.4-1.6 3.1A9 9 0 1 0 12 3Z"/></svg></a>
+          </div>
+        </div>
+        <div class="footer-links">
+          <h5>QUICK LINKS</h5>
+          <ul>
+            <li><a href="#">Stays</a></li>
+            <li><a href="#">Experiences</a></li>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Locations</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-help">
+          <h5>HELP</h5>
+          <ul>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="#">Booking Policy</a></li>
+            <li><a href="#">Terms & Conditions</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-contact">
+          <h5>CONTACT</h5>
+          <p class="contact-line">+91 98765 43210</p>
+          <p class="contact-line">hello@orangbnb.com</p>
+          <p class="contact-line">Jaipur, Rajasthan, India</p>
+        </div>
+      </div>
+      <hr class="thin">
+      <div class="footer-bar">
+        <span>© 2026 orang.bnb. All rights reserved.</span>
+        <span>Made with
+          <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.4-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.6-9.5 9-9.5 9Z"/></svg>
+          in India</span>
+      </div>
+    </footer>
+
+  </div>
+</div>
+
+<!-- ===================== BOOKING MODAL ===================== -->
+<div id="booking-overlay">
+  <div id="booking-modal">
+    <button id="booking-close" aria-label="Close booking">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#1B241C" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+
+    <div class="booking-head">
+      <p class="eyebrow">Book Your Stay</p>
+      <h2>orang.bnb 1.0</h2>
+      <p>Our first property — a heritage home in the heart of Jaipur, with three room types to choose from.</p>
+      <div class="prop-meta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M12 21s-6-5.7-6-10.5A6 6 0 0 1 18 10.5C18 15.3 12 21 12 21Z"/><circle cx="12" cy="10" r="2.2"/></svg>
+        <span>Jaipur, Rajasthan, India</span>
+      </div>
+    </div>
+
+    <div class="room-list">
+      <div class="room-card">
+        <div class="room-top">
+          <h4>1 Room</h4>
+          <span class="room-tag">Cozy</span>
+        </div>
+        <p class="room-desc">A simple, comfortable single room — perfect for solo travelers or couples.</p>
+        <div class="room-specs">
+          <span>Sleeps 2</span>
+          <span>1 Bed</span>
+        </div>
+        <button class="room-select" data-room="1 Room">Select
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div class="room-card">
+        <div class="room-top">
+          <h4>1 BHK</h4>
+          <span class="room-tag">Popular</span>
+        </div>
+        <p class="room-desc">A private bedroom with its own living space — ideal for small families.</p>
+        <div class="room-specs">
+          <span>Sleeps 3</span>
+          <span>1 Bed + Hall</span>
+        </div>
+        <button class="room-select" data-room="1 BHK">Select
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div class="room-card">
+        <div class="room-top">
+          <h4>2 BHK</h4>
+          <span class="room-tag">Spacious</span>
+        </div>
+        <p class="room-desc">Two bedrooms with a shared living area — great for groups or bigger families.</p>
+        <div class="room-specs">
+          <span>Sleeps 5</span>
+          <span>2 Beds + Hall</span>
+        </div>
+        <button class="room-select" data-room="2 BHK">Select
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div class="room-card">
+        <div class="room-top">
+          <h4>3 BHK</h4>
+          <span class="room-tag">Whole Floor</span>
+        </div>
+        <p class="room-desc">Three bedrooms across a full floor — best for large groups or celebrations.</p>
+        <div class="room-specs">
+          <span>Sleeps 7</span>
+          <span>3 Beds + Hall</span>
+        </div>
+        <button class="room-select" data-room="3 BHK">Select
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
 (function(){
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let soundOn = true;
 
   // ---------- fruit artwork ----------
   const svgWrap = (inner) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
-
   const ORANGE_SVG = svgWrap(`
     <circle cx="50" cy="54" r="34" fill="#f2801f"/>
     <circle cx="50" cy="54" r="34" fill="url(#og)"/>
@@ -250,7 +902,6 @@
       </radialGradient>
     </defs>
   `);
-
   document.getElementById('orange').innerHTML = ORANGE_SVG;
 
   const stage = document.getElementById('stage');
@@ -266,13 +917,95 @@
   }
   requestAnimationFrame(frame);
 
+  // ============================================================
+  // SOUND — synthesized with Web Audio API (no external files)
+  // ============================================================
+  let audioCtx = null;
+  function initAudio(){
+    if(!audioCtx){
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if(Ctx) audioCtx = new Ctx();
+    }
+    if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function noiseBuffer(duration, shape){
+    const size = Math.floor(audioCtx.sampleRate * duration);
+    const buffer = audioCtx.createBuffer(1, size, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<size;i++){
+      const env = shape ? shape(i/size) : (1 - i/size);
+      data[i] = (Math.random()*2-1) * env;
+    }
+    return buffer;
+  }
+
+  // quick blade "shink" whoosh at the moment of the cut
+  function playSliceSound(){
+    if(!soundOn || !audioCtx) return;
+    const t0 = audioCtx.currentTime;
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = noiseBuffer(0.22, x => Math.pow(1-x, 1.5));
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(2600, t0);
+    filter.frequency.exponentialRampToValueAtTime(700, t0+0.2);
+    filter.Q.value = 1.1;
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.45, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0+0.22);
+    noise.connect(filter).connect(gain).connect(audioCtx.destination);
+    noise.start(t0);
+    noise.stop(t0+0.22);
+  }
+
+  // juicy splash burst right after the slice lands
+  function playSplashSound(){
+    if(!soundOn || !audioCtx) return;
+    const t0 = audioCtx.currentTime + 0.05;
+
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = noiseBuffer(0.45, x => Math.pow(1-x, 2));
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(4200, t0);
+    filter.frequency.exponentialRampToValueAtTime(280, t0+0.4);
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.55, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0+0.42);
+    noise.connect(filter).connect(gain).connect(audioCtx.destination);
+    noise.start(t0);
+    noise.stop(t0+0.42);
+
+    // scattered juice droplet "plips"
+    for(let i=0;i<6;i++){
+      const dt = t0 + 0.04 + Math.random()*0.28;
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      const freq = 550 + Math.random()*950;
+      osc.frequency.setValueAtTime(freq, dt);
+      osc.frequency.exponentialRampToValueAtTime(freq*0.45, dt+0.09);
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(0.16, dt);
+      g.gain.exponentialRampToValueAtTime(0.001, dt+0.1);
+      osc.connect(g).connect(audioCtx.destination);
+      osc.start(dt);
+      osc.stop(dt+0.11);
+    }
+  }
+
+  const soundToggle = document.getElementById('sound-toggle');
+  soundToggle.addEventListener('click', ()=>{
+    soundOn = !soundOn;
+    soundToggle.textContent = soundOn ? '🔊 SOUND ON' : '🔇 SOUND OFF';
+    soundToggle.setAttribute('aria-pressed', String(soundOn));
+    if(soundOn) initAudio();
+  });
+
   // ---------- slice trail ----------
   const canvas = document.getElementById('slice-canvas');
   const ctx = canvas.getContext('2d');
-  function resizeCanvas(){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
+  function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
@@ -298,10 +1031,7 @@
     }, 200);
   }
 
-  function orangeRect(){
-    const rig = document.getElementById('orange-rig');
-    return rig.getBoundingClientRect();
-  }
+  function orangeRect(){ return document.getElementById('orange-rig').getBoundingClientRect(); }
 
   function pathHitsOrange(pts){
     const r = orangeRect();
@@ -315,13 +1045,12 @@
 
   function pathLength(pts){
     let len = 0;
-    for(let i=1;i<pts.length;i++){
-      len += Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y);
-    }
+    for(let i=1;i<pts.length;i++) len += Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y);
     return len;
   }
 
   stage.addEventListener('pointerdown', (e)=>{
+    initAudio();
     if(sliced) return;
     dragging = true;
     points = [{x:e.clientX, y:e.clientY}];
@@ -338,12 +1067,12 @@
     points.push({x:e.clientX, y:e.clientY});
     const len = pathLength(points);
     const hit = pathHitsOrange(points);
-    const isTap = len < 12; // simple click/tap fallback
+    const isTap = len < 12;
 
     if(hit && (len > 30 || isTap)){
       const first = points[0], last = points[points.length-1];
       let angle = Math.atan2(last.y-first.y, last.x-first.x) * 180/Math.PI;
-      if(isTap) angle = -20; // pleasant default diagonal for a plain tap
+      if(isTap) angle = -20;
       sliceOrange(angle, {x:(first.x+last.x)/2, y:(first.y+last.y)/2});
     }
     clearTrailSoon();
@@ -384,7 +1113,7 @@
     const left = rig.querySelector('.half.left');
     const right = rig.querySelector('.half.right');
     const flyDist = 90;
-    const rad = (angleDeg+90) * Math.PI/180; // perpendicular to slice direction
+    const rad = (angleDeg+90) * Math.PI/180;
     const fx = Math.cos(rad)*flyDist + 'px';
     const fy = Math.sin(rad)*flyDist + 'px';
     [left,right].forEach(h=>{
@@ -395,6 +1124,8 @@
       h.classList.add('fly');
     });
 
+    playSliceSound();
+    playSplashSound();
     spawnDroplets(point.x, point.y);
     spawnFlash(point.x, point.y);
 
@@ -406,14 +1137,48 @@
   function revealSite(){
     document.getElementById('stage').classList.add('leaving');
     const site = document.getElementById('site');
-    site.hidden = false;
     requestAnimationFrame(()=> site.classList.add('show'));
+    document.documentElement.classList.remove('locked');
+    document.body.classList.remove('locked');
   }
 
   document.getElementById('skip-link').addEventListener('click', ()=>{
     if(sliced) return;
     sliced = true;
     revealSite();
+  });
+
+  // ============================================================
+  // BOOKING MODAL
+  // ============================================================
+  const bookingOverlay = document.getElementById('booking-overlay');
+  const bookingClose = document.getElementById('booking-close');
+  const bookBtnHeader = document.getElementById('book-btn-header');
+
+  function openBooking(e){
+    if(e) e.preventDefault();
+    bookingOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeBooking(){
+    bookingOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if(bookBtnHeader) bookBtnHeader.addEventListener('click', openBooking);
+  bookingClose.addEventListener('click', closeBooking);
+  bookingOverlay.addEventListener('click', (e)=>{
+    if(e.target === bookingOverlay) closeBooking();
+  });
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape') closeBooking();
+  });
+
+  document.querySelectorAll('.room-select').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      // Room-level booking flow (dates, guests, pricing) to be added next.
+      console.log('Room selected:', btn.dataset.room);
+    });
   });
 
 })();
