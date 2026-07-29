@@ -143,14 +143,6 @@
     font-family:'Inter', sans-serif; font-size:12px; color:#a98a5f;
     text-decoration:underline; cursor:pointer;
   }
-  #sound-toggle{
-    position:absolute; top:20px; right:20px; z-index:6;
-    background:rgba(255,255,255,0.6); border:1px solid var(--gate-orange-deep);
-    color:var(--gate-orange-deep); border-radius:999px;
-    font-family:'Inter',sans-serif; font-size:11px; font-weight:600;
-    padding:6px 12px; cursor:pointer; letter-spacing:.04em;
-  }
-
   #slice-canvas{ position:fixed; inset:0; z-index:110; pointer-events:none; }
 
   @media (prefers-reduced-motion: reduce){
@@ -620,8 +612,6 @@
 
 <!-- ===================== SLICE-TO-ENTER GATE ===================== -->
 <div id="stage">
-  <button id="sound-toggle" aria-pressed="true">🔊 SOUND ON</button>
-
   <div id="orange-rig">
     <div id="glow-ring"></div>
     <div id="orange"></div>
@@ -911,7 +901,6 @@
       <hr class="thin">
       <div class="footer-bar">
         <span>Thoughtfully crafted and personally hosted by Komal Kumari Singh. © 2026 orang.bnb. All rights reserved.</span>
-        
       </div>
     </footer>
 
@@ -1002,7 +991,6 @@
 <script>
 (function(){
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let soundOn = true;
 
   // ---------- fruit artwork ----------
   const svgWrap = (inner) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
@@ -1059,7 +1047,7 @@
 
   // quick blade "shink" whoosh at the moment of the cut
   function playSliceSound(){
-    if(!soundOn || !audioCtx) return;
+    if(!audioCtx) return;
     const t0 = audioCtx.currentTime;
     const noise = audioCtx.createBufferSource();
     noise.buffer = noiseBuffer(0.22, x => Math.pow(1-x, 1.5));
@@ -1078,7 +1066,7 @@
 
   // juicy splash burst right after the slice lands
   function playSplashSound(){
-    if(!soundOn || !audioCtx) return;
+    if(!audioCtx) return;
     const t0 = audioCtx.currentTime + 0.05;
 
     const noise = audioCtx.createBufferSource();
@@ -1110,14 +1098,6 @@
       osc.stop(dt+0.11);
     }
   }
-
-  const soundToggle = document.getElementById('sound-toggle');
-  soundToggle.addEventListener('click', ()=>{
-    soundOn = !soundOn;
-    soundToggle.textContent = soundOn ? '🔊 SOUND ON' : '🔇 SOUND OFF';
-    soundToggle.setAttribute('aria-pressed', String(soundOn));
-    if(soundOn) initAudio();
-  });
 
   // ---------- slice trail ----------
   const canvas = document.getElementById('slice-canvas');
@@ -1356,7 +1336,7 @@
 
     // Where the orange *should* be right now, based on scroll position.
     function targetForScroll(){
-      const first = waypoints[0], last = waypoints[waypoints.length-1];2
+      const first = waypoints[0], last = waypoints[waypoints.length-1];
       // Tie progress to the overall scroll fraction (0 at the top of the
       // page, 1 at the very bottom) so it always finishes its journey
       // and settles into the footer logo exactly as the page bottoms out.
