@@ -543,6 +543,36 @@
   @media (max-width:640px){
     .room-list{ grid-template-columns: 1fr; }
   }
+
+  /* ---- Mobile header fix: keep logo + Book button on one row, always fully visible ---- */
+  @media (max-width:760px){
+    header{
+      flex-wrap:wrap;
+      row-gap:10px;
+    }
+    header .logo{
+      order:1;
+    }
+    #book-btn-header{
+      order:2;
+      margin-left:auto;
+      font-size:11px;
+      padding:8px 14px;
+      gap:5px;
+    }
+    #book-btn-header svg{ width:9px; }
+    nav{
+      order:3;
+      width:100%;
+      justify-content:flex-start;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      gap:18px;
+      padding-bottom:2px;
+      scrollbar-width:none;
+    }
+    nav::-webkit-scrollbar{ display:none; }
+  }
 </style>
 </head>
 <body class="locked">
