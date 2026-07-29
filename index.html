@@ -544,34 +544,46 @@
     .room-list{ grid-template-columns: 1fr; }
   }
 
-  /* ---- Mobile header fix: keep logo + Book button on one row, always fully visible ---- */
+  /* ---- Mobile header fix: clean, evenly-sized, single-line nav ---- */
   @media (max-width:760px){
     header{
       flex-wrap:wrap;
-      row-gap:10px;
+      row-gap:12px;
+      padding-top:14px;
+      padding-bottom:14px;
     }
     header .logo{
       order:1;
+      font-size:15px;
     }
+    header .logo .dot{ width:22px; height:22px; }
     #book-btn-header{
       order:2;
       margin-left:auto;
-      font-size:11px;
-      padding:8px 14px;
-      gap:5px;
+      font-size:12px;
+      font-weight:700;
+      padding:9px 16px;
+      gap:6px;
     }
-    #book-btn-header svg{ width:9px; }
+    #book-btn-header svg{ width:10px; }
     nav{
       order:3;
       width:100%;
-      justify-content:flex-start;
-      overflow-x:auto;
-      -webkit-overflow-scrolling:touch;
-      gap:18px;
-      padding-bottom:2px;
-      scrollbar-width:none;
+      justify-content:space-between;
+      gap:0;
+      overflow-x:visible;
     }
-    nav::-webkit-scrollbar{ display:none; }
+    nav a{
+      font-size:12px;
+      font-weight:600;
+    }
+    nav .nav-blog{ display:none; }
+  }
+
+  @media (max-width:400px){
+    nav a{ font-size:10.5px; }
+    header .logo{ font-size:13.5px; }
+    #book-btn-header{ font-size:11px; padding:8px 13px; }
   }
 </style>
 </head>
@@ -613,7 +625,7 @@
         <a href="#">Experiences</a>
         <a href="#">About Us</a>
         <a href="#">Locations</a>
-        <a href="#">Blog</a>
+        <a href="#" class="nav-blog">Blog</a>
         <a href="#">Contact</a>
       </nav>
       <a href="#" id="book-btn-header" class="book-btn">Book Your Stay
