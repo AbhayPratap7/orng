@@ -24,7 +24,7 @@
   html,body{
     margin:0; padding:0; width:100%;
     overflow-x:hidden;              /* kills any horizontal scroll/bounce */
-    overscroll-behavior:none;       /* stops the rubber-band bounce entirely */
+    overscroll-behavior-x:none;     /* stops horizontal bounce only — vertical pull-to-refresh still works */
     background:#F4EEE1;             /* matches --cream, so if it ever bounces, it's not white */
   }
   html.locked, body.locked{ overflow:hidden; height:100%; }
@@ -38,7 +38,7 @@
     touch-action:none;
     cursor: crosshair;
     background:var(--gate-cream);
-    overscroll-behavior:none;
+    overscroll-behavior-x:none;
     z-index:100;
     transition: opacity .6s ease, filter .6s ease;
   }
