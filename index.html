@@ -314,6 +314,10 @@
     font-size:var(--fs-sub); line-height:1.6; max-width:32ch;
     margin-bottom: clamp(10px,2vw,28px); color:#3a3f3a;
   }
+  #orange-landing{
+    height:1px;
+    margin-top:clamp(60px, 16vw, 130px);
+  }
   .badge{
     position:absolute; bottom:clamp(-30px,-3vw,-10px); left:50%;
     transform:translateX(-30%);
@@ -705,6 +709,7 @@
         <a href="#" class="arrow-link">DISCOVER MORE
           <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
+        <div id="orange-landing" aria-hidden="true"></div>
         <div class="badge">
           <svg viewBox="0 0 120 120" fill="none">
             <circle cx="60" cy="60" r="58" stroke="#D96430" stroke-width="1"/>
@@ -1296,17 +1301,26 @@
   (function(){
     const heroSection = document.querySelector('.hero');
     const orangeEl = document.getElementById('scroll-orange');
+    const landingEl = document.getElementById('orange-landing');
     if(!heroSection || !orangeEl) return;
 
     let ticking = false;
+    let maxDrop = 0;
+
+    function computeMaxDrop(){
+      if(landingEl){
+        // Distance (in px) between the orange's resting spot and the
+        // marked landing spot, measured from actual layout position
+        // (unaffected by any transform already applied).
+        return Math.max(landingEl.offsetTop - orangeEl.offsetTop, 40);
+      }
+      return heroSection.getBoundingClientRect().height * 0.55;
+    }
 
     function updateOrangePosition(){
       const rect = heroSection.getBoundingClientRect();
-      const heroHeight = rect.height || 1;
-      const maxDrop = heroHeight * 0.55; // how far down it can travel from its resting spot
-
       // Move exactly as fast as the user scrolls (1:1 with scroll distance),
-      // capped once it reaches maxDrop so it doesn't run off the hero section.
+      // capped once it reaches the landing spot.
       const scrolledPast = Math.max(0, -rect.top);
       const dy = Math.min(scrolledPast, maxDrop);
       const progress = maxDrop > 0 ? dy / maxDrop : 0;
@@ -1323,8 +1337,14 @@
       }
     }
 
+    function onResize(){
+      maxDrop = computeMaxDrop();
+      updateOrangePosition();
+    }
+
     window.addEventListener('scroll', onScroll, { passive:true });
-    window.addEventListener('resize', updateOrangePosition);
+    window.addEventListener('resize', onResize);
+    maxDrop = computeMaxDrop();
     updateOrangePosition();
   })();
 
