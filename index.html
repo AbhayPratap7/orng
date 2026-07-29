@@ -1295,10 +1295,12 @@
 
   // ============================================================
   // SCROLL-LINKED ORANGE — travels along a winding path down the
-  // whole page as the visitor scrolls, shrinking gradually, then
-  // fades right as it settles into the footer logo dot's spot.
-  // All positions are measured live from the real layout, so the
-  // path re-maps itself on any screen size.
+  // whole page as the visitor scrolls, shrinking gradually, and
+  // settles permanently into the footer logo's spot once you reach
+  // the bottom — spinning there in place. Scroll back up and it
+  // retraces its steps. Motion is eased continuously (not snapped
+  // to each scroll event) so it always feels smooth and controlled,
+  // however fast someone scrolls.
   // ============================================================
   (function(){
     const orangeEl = document.getElementById('scroll-orange');
@@ -1321,6 +1323,7 @@
     let wp0 = null;      // captured once, from the orange's natural resting spot
     let waypoints = [];
     let ready = false;
+    let curX = 0, curY = 0, curSize = 0, curSet = false;
 
     function pageCenter(el){
       const r = el.getBoundingClientRect();
@@ -1350,10 +1353,15 @@
 
     function smoothstep(t){ return t*t*(3-2*t); }
 
-    function update(){
-      if(!ready) return;
+    // Where the orange *should* be right now, based on scroll position.
+    function targetForScroll(){
       const first = waypoints[0], last = waypoints[waypoints.length-1];
-      const refY = Math.min(Math.max(window.scrollY + window.innerHeight*0.4, first.y), last.y);
+      // Tie progress to the overall scroll fraction (0 at the top of the
+      // page, 1 at the very bottom) so it always finishes its journey
+      // and settles into the footer logo exactly as the page bottoms out.
+      const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+      const p = Math.min(Math.max(window.scrollY / maxScroll, 0), 1);
+      const refY = first.y + p * (last.y - first.y);
 
       let i = 0;
       for(; i < waypoints.length-2; i++){
@@ -1364,38 +1372,44 @@
       const t = Math.min(Math.max((refY - a.y) / span, 0), 1);
       const et = smoothstep(t);
 
-      const overallT = Math.min(Math.max((refY - first.y) / ((last.y - first.y) || 1), 0), 1);
-      const wiggleFade = overallT > 0.85 ? Math.max(0, 1 - (overallT-0.85)/0.15) : 1;
-      const wiggle = reduceMotion ? 0 : Math.sin(overallT * Math.PI * 5) * 14 * wiggleFade;
-      const opacity = overallT > 0.93 ? Math.max(0, 1 - (overallT-0.93)/0.07) : 1;
-
-      const x = a.x + (b.x - a.x) * et;
-      const y = a.y + (b.y - a.y) * et;
-      const size = a.size + (b.size - a.size) * et;
-
-      const vx = (x - window.scrollX) + wiggle - size/2;
-      const vy = (y - window.scrollY) - size/2;
-
-      orangeEl.style.width = size + 'px';
-      orangeEl.style.height = size + 'px';
-      orangeEl.style.transform = `translate(${vx}px, ${vy}px)`;
-      orangeEl.style.opacity = opacity;
+      return {
+        x: a.x + (b.x - a.x) * et,
+        y: a.y + (b.y - a.y) * et,
+        size: a.size + (b.size - a.size) * et
+      };
     }
 
-    let ticking = false;
-    function onScroll(){
-      if(!ticking){
-        requestAnimationFrame(()=>{ update(); ticking = false; });
-        ticking = true;
+    // Continuous, eased follow — the orange gently glides toward wherever
+    // it should be, rather than jumping there on every scroll pixel. This
+    // is what keeps fast or jerky scrolling from feeling chaotic.
+    function tick(){
+      if(ready){
+        const target = targetForScroll();
+        if(!curSet || reduceMotion){
+          curX = target.x; curY = target.y; curSize = target.size; curSet = true;
+        } else {
+          const ease = 0.09;
+          curX += (target.x - curX) * ease;
+          curY += (target.y - curY) * ease;
+          curSize += (target.size - curSize) * ease;
+        }
+
+        const vx = (curX - window.scrollX) - curSize/2;
+        const vy = (curY - window.scrollY) - curSize/2;
+
+        orangeEl.style.width = curSize + 'px';
+        orangeEl.style.height = curSize + 'px';
+        orangeEl.style.transform = `translate(${vx}px, ${vy}px)`;
       }
+      requestAnimationFrame(tick);
     }
-    function onResize(){ computeWaypoints(); update(); }
+
+    function onResize(){ computeWaypoints(); }
 
     computeWaypoints();
-    update();
-    window.addEventListener('scroll', onScroll, { passive:true });
     window.addEventListener('resize', onResize);
     window.addEventListener('load', onResize);
+    requestAnimationFrame(tick);
   })();
 
   document.querySelectorAll('.room-select').forEach(btn=>{
