@@ -277,15 +277,14 @@
   /* ---- Scroll-linked animated orange ---- */
   #scroll-orange{
     position:absolute;
-    top: clamp(60px, 26vw, 140px);
+    top: clamp(56px, 24vw, 140px);
     left: 4%;
-    width: clamp(60px, 25vw, 130px);
+    width: clamp(52px, 22vw, 130px);
     aspect-ratio: 1/1;
     z-index:5;
     pointer-events:none;
     will-change: transform;
     filter: drop-shadow(0 10px 16px rgba(120,60,10,.38));
-    transition: transform .12s linear;
   }
   #scroll-orange svg{ width:100%; height:100%; display:block; }
   #scroll-orange .spin{
@@ -298,7 +297,6 @@
   }
   @media (prefers-reduced-motion: reduce){
     #scroll-orange .spin{ animation:none; }
-    #scroll-orange{ transition:none; }
   }
   .hero-left{
     padding: clamp(16px,3vw,50px) var(--pad);
@@ -1305,14 +1303,16 @@
     function updateOrangePosition(){
       const rect = heroSection.getBoundingClientRect();
       const heroHeight = rect.height || 1;
-      const scrollRange = Math.max(heroHeight - window.innerHeight * 0.35, 1);
-      let progress = (0 - rect.top) / scrollRange;
-      progress = Math.max(0, Math.min(1, progress));
+      const maxDrop = heroHeight * 0.55; // how far down it can travel from its resting spot
 
-      const maxDrop = heroHeight * 0.55;      // how far down it can travel from its resting spot
+      // Move exactly as fast as the user scrolls (1:1 with scroll distance),
+      // capped once it reaches maxDrop so it doesn't run off the hero section.
+      const scrolledPast = Math.max(0, -rect.top);
+      const dy = Math.min(scrolledPast, maxDrop);
+      const progress = maxDrop > 0 ? dy / maxDrop : 0;
       const wiggle = Math.sin(progress * Math.PI * 2.4) * 16; // gentle side-to-side drift
 
-      orangeEl.style.transform = `translate(${wiggle}px, ${progress * maxDrop}px)`;
+      orangeEl.style.transform = `translate(${wiggle}px, ${dy}px)`;
       ticking = false;
     }
 
