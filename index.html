@@ -380,10 +380,22 @@
     background:var(--green); color:var(--white);
     padding: clamp(16px,2.6vw,36px) var(--pad);
     display:flex; flex-direction:column; justify-content:center; gap:clamp(8px,1.2vw,16px);
+    overflow:hidden;
+    min-width:0;
   }
-  .dest-intro h2{font-size:clamp(15px,2.4vw,30px);}
+  .dest-intro h2{
+    font-size:clamp(13px,2vw,26px);
+    line-height:1.08;
+    overflow-wrap:break-word;
+    word-break:break-word;
+    hyphens:auto;
+  }
   .dest-intro h2 .accent{color:var(--orange);}
   .dest-intro p{font-size:var(--fs-small); line-height:1.55; opacity:0.85; max-width:26ch;}
+  .dest-intro .arrow-link{
+    white-space:normal;
+    line-height:1.4;
+  }
   .dest-card{
     position:relative;
     padding: clamp(14px,2.2vw,30px) clamp(10px,1.6vw,22px);
@@ -396,6 +408,7 @@
   .dest-card h4{font-size:var(--fs-card-title); font-family:'Archivo Black',sans-serif; text-transform:uppercase;}
   .dest-card p{font-size:var(--fs-small); line-height:1.4; opacity:0.85; max-width:22ch;}
   .dest-card .arrow-link{margin-top:clamp(4px,0.8vw,10px);}
+  .dest-card .arrow-link.placeholder{visibility:hidden;}
   .dest-1{background:var(--orange); color:var(--white);}
   .dest-2{background:var(--sage); color:var(--ink);}
   .dest-3{background:var(--tan); color:var(--ink);}
@@ -404,12 +417,16 @@
   .dest-card.coming-soon{ opacity:0.94; }
   .dest-card.coming-soon > *{ filter:none; }
   .coming-soon-badge{
-    position:absolute; top:clamp(12px,1.8vw,20px); right:clamp(12px,1.6vw,20px);
+    position:absolute; top:clamp(12px,1.8vw,20px); left:50%;
+    transform:translateX(-50%);
     background:var(--ink); color:var(--white);
-    font-family:'Inter', sans-serif; font-weight:700; font-size:var(--fs-small);
-    letter-spacing:0.08em; text-transform:uppercase;
-    padding: clamp(4px,0.6vw,7px) clamp(8px,1.2vw,14px);
+    font-family:'Inter', sans-serif; font-weight:700;
+    font-size:clamp(7px,0.68vw,10px);
+    letter-spacing:0.06em; text-transform:uppercase;
+    padding: clamp(3px,0.5vw,5px) clamp(7px,1vw,11px);
     border-radius:999px; z-index:2;
+    white-space:nowrap;
+    text-align:center;
   }
   .dest-card.dest-1 .coming-soon-badge{ background:var(--white); color:var(--orange); }
 
@@ -821,18 +838,21 @@
         <svg viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M32 8a10 10 0 0 1 10 10v24H22V18A10 10 0 0 1 32 8Z"/><path d="M10 44h44M14 30h6M44 30h6"/></svg>
         <h4>Udaipur</h4>
         <p>Romance, lakes and quiet luxury.</p>
+        <a href="#" class="arrow-link placeholder" aria-hidden="true">EXPLORE <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
       <div class="dest-card dest-3 coming-soon">
         <span class="coming-soon-badge">Coming Soon</span>
         <svg viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 44V20l6-4 6 4v24M28 44V14l8-6 8 6v30M32 44V22l6-4 6 4v22"/><rect x="4" y="44" width="56" height="2"/></svg>
         <h4>Jodhpur</h4>
         <p>Blue streets, strong stories.</p>
+        <a href="#" class="arrow-link placeholder" aria-hidden="true">EXPLORE <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
       <div class="dest-card dest-4 coming-soon">
         <span class="coming-soon-badge">Coming Soon</span>
         <svg viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="32" cy="14" r="6"/><path d="M6 40l10-14 8 8 6-10 10 16H6Z"/><path d="M44 40l6-8 8 8H44Z"/></svg>
         <h4>Pushkar</h4>
         <p>Spiritual vibes and desert skies.</p>
+        <a href="#" class="arrow-link placeholder" aria-hidden="true">EXPLORE <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
     </section>
 
