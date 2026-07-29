@@ -272,7 +272,34 @@
   }
   .book-btn svg{width:clamp(9px,1vw,14px);}
 
-  .hero{ display:grid; grid-template-columns: 30% 45% 25%; }
+  .hero{ display:grid; grid-template-columns: 30% 45% 25%; position:relative; }
+
+  /* ---- Scroll-linked animated orange ---- */
+  #scroll-orange{
+    position:absolute;
+    top:8%;
+    left:28%;
+    width:clamp(46px, 7vw, 86px);
+    height:clamp(46px, 7vw, 86px);
+    z-index:4;
+    pointer-events:none;
+    will-change: top, left;
+    filter: drop-shadow(0 10px 16px rgba(120,60,10,.38));
+    transition: top .12s linear, left .12s linear;
+  }
+  #scroll-orange svg{ width:100%; height:100%; display:block; }
+  #scroll-orange .spin{
+    animation: scrollOrangeSpin 5.5s linear infinite;
+    transform-origin:50% 50%;
+  }
+  @keyframes scrollOrangeSpin{
+    from{ transform:rotate(0deg); }
+    to{ transform:rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    #scroll-orange .spin{ animation:none; }
+    #scroll-orange{ transition:none; }
+  }
   .hero-left{
     padding: clamp(16px,3vw,50px) var(--pad);
     display:flex; flex-direction:column; justify-content:center;
@@ -634,6 +661,45 @@
     </header>
 
     <section class="hero">
+      <div id="scroll-orange" aria-hidden="true">
+        <div class="spin">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="scrollOrangeGrad" cx="35%" cy="28%" r="78%">
+                <stop offset="0%" stop-color="#ffd58a"/>
+                <stop offset="45%" stop-color="#f9942f"/>
+                <stop offset="100%" stop-color="#c85a0f"/>
+              </radialGradient>
+              <radialGradient id="scrollOrangeShine" cx="32%" cy="26%" r="32%">
+                <stop offset="0%" stop-color="#fff6df" stop-opacity=".85"/>
+                <stop offset="100%" stop-color="#fff6df" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="50" cy="54" r="36" fill="url(#scrollOrangeGrad)"/>
+            <g fill="#8a3d05" opacity="0.16">
+              <circle cx="33" cy="38" r="1.1"/>
+              <circle cx="41" cy="32" r="1"/>
+              <circle cx="50" cy="29" r="1"/>
+              <circle cx="59" cy="32" r="1"/>
+              <circle cx="67" cy="38" r="1.1"/>
+              <circle cx="28" cy="50" r="1"/>
+              <circle cx="72" cy="50" r="1"/>
+              <circle cx="33" cy="63" r="1"/>
+              <circle cx="45" cy="70" r="1.1"/>
+              <circle cx="56" cy="70" r="1"/>
+              <circle cx="67" cy="63" r="1"/>
+              <circle cx="50" cy="60" r="1"/>
+              <circle cx="42" cy="52" r="1"/>
+              <circle cx="60" cy="45" r="1"/>
+            </g>
+            <ellipse cx="38" cy="42" rx="10" ry="15" fill="url(#scrollOrangeShine)"/>
+            <path d="M50 18c-2 4 2 6 0 10" stroke="#6b4226" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+            <path d="M52 20 Q68 10 71 24 Q60 31 52 20 Z" fill="#3d7a34"/>
+            <path d="M52 20 Q60 23 63 28" stroke="#2c5a25" stroke-width="1" fill="none" opacity=".6"/>
+          </svg>
+        </div>
+      </div>
+
       <div class="hero-left">
         <h1>STAY<br><span class="line2">DIFFERENT.</span><br>STAY<br><span class="line2">ORANGE.</span></h1>
         <div class="rule"></div>
@@ -1223,6 +1289,63 @@
   document.addEventListener('keydown', (e)=>{
     if(e.key === 'Escape') closeBooking();
   });
+
+  // ============================================================
+  // SCROLL-LINKED ORANGE — spins in place always; glides downward
+  // along a gentle wavy path as the visitor scrolls the hero.
+  // ============================================================
+  (function(){
+    const heroSection = document.querySelector('.hero');
+    const orangeEl = document.getElementById('scroll-orange');
+    if(!heroSection || !orangeEl) return;
+
+    // Waypoints approximate a hand-drawn wavy path from the top of the
+    // hero image down toward the bottom — {y: % of hero height, x: % of hero width}
+    const waypoints = [
+      { y: 8,  x: 28 },
+      { y: 20, x: 32 },
+      { y: 34, x: 26 },
+      { y: 48, x: 31 },
+      { y: 62, x: 25 },
+      { y: 76, x: 30 },
+      { y: 90, x: 27 }
+    ];
+
+    let ticking = false;
+
+    function updateOrangePosition(){
+      const rect = heroSection.getBoundingClientRect();
+      const heroHeight = rect.height || 1;
+      // 0 = hero just entering / at top of viewport, 1 = hero has scrolled mostly past
+      const scrollRange = Math.max(heroHeight - window.innerHeight * 0.35, 1);
+      let progress = (0 - rect.top) / scrollRange;
+      progress = Math.max(0, Math.min(1, progress));
+
+      const idx = progress * (waypoints.length - 1);
+      const i0 = Math.floor(idx);
+      const i1 = Math.min(waypoints.length - 1, i0 + 1);
+      const t = idx - i0;
+      const p0 = waypoints[i0], p1 = waypoints[i1];
+
+      const y = p0.y + (p1.y - p0.y) * t;
+      const x = p0.x + (p1.x - p0.x) * t;
+
+      orangeEl.style.top = y + '%';
+      orangeEl.style.left = x + '%';
+      ticking = false;
+    }
+
+    function onScroll(){
+      if(!ticking){
+        requestAnimationFrame(updateOrangePosition);
+        ticking = true;
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive:true });
+    window.addEventListener('resize', updateOrangePosition);
+    updateOrangePosition();
+  })();
 
   document.querySelectorAll('.room-select').forEach(btn=>{
     btn.addEventListener('click', ()=>{
