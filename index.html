@@ -277,15 +277,15 @@
   /* ---- Scroll-linked animated orange ---- */
   #scroll-orange{
     position:absolute;
-    top:8%;
-    left:28%;
-    width:clamp(46px, 7vw, 86px);
-    height:clamp(46px, 7vw, 86px);
-    z-index:4;
+    top: clamp(60px, 26vw, 140px);
+    left: 4%;
+    width: clamp(60px, 25vw, 130px);
+    aspect-ratio: 1/1;
+    z-index:5;
     pointer-events:none;
-    will-change: top, left;
+    will-change: transform;
     filter: drop-shadow(0 10px 16px rgba(120,60,10,.38));
-    transition: top .12s linear, left .12s linear;
+    transition: transform .12s linear;
   }
   #scroll-orange svg{ width:100%; height:100%; display:block; }
   #scroll-orange .spin{
@@ -1291,47 +1291,28 @@
   });
 
   // ============================================================
-  // SCROLL-LINKED ORANGE — spins in place always; glides downward
-  // along a gentle wavy path as the visitor scrolls the hero.
+  // SCROLL-LINKED ORANGE — rests at its fixed spot (matching the
+  // marked box) and spins in place always; as the visitor scrolls
+  // the hero, it drifts downward with a gentle side-to-side wiggle.
   // ============================================================
   (function(){
     const heroSection = document.querySelector('.hero');
     const orangeEl = document.getElementById('scroll-orange');
     if(!heroSection || !orangeEl) return;
 
-    // Waypoints approximate a hand-drawn wavy path from the top of the
-    // hero image down toward the bottom — {y: % of hero height, x: % of hero width}
-    const waypoints = [
-      { y: 8,  x: 28 },
-      { y: 20, x: 32 },
-      { y: 34, x: 26 },
-      { y: 48, x: 31 },
-      { y: 62, x: 25 },
-      { y: 76, x: 30 },
-      { y: 90, x: 27 }
-    ];
-
     let ticking = false;
 
     function updateOrangePosition(){
       const rect = heroSection.getBoundingClientRect();
       const heroHeight = rect.height || 1;
-      // 0 = hero just entering / at top of viewport, 1 = hero has scrolled mostly past
       const scrollRange = Math.max(heroHeight - window.innerHeight * 0.35, 1);
       let progress = (0 - rect.top) / scrollRange;
       progress = Math.max(0, Math.min(1, progress));
 
-      const idx = progress * (waypoints.length - 1);
-      const i0 = Math.floor(idx);
-      const i1 = Math.min(waypoints.length - 1, i0 + 1);
-      const t = idx - i0;
-      const p0 = waypoints[i0], p1 = waypoints[i1];
+      const maxDrop = heroHeight * 0.55;      // how far down it can travel from its resting spot
+      const wiggle = Math.sin(progress * Math.PI * 2.4) * 16; // gentle side-to-side drift
 
-      const y = p0.y + (p1.y - p0.y) * t;
-      const x = p0.x + (p1.x - p0.x) * t;
-
-      orangeEl.style.top = y + '%';
-      orangeEl.style.left = x + '%';
+      orangeEl.style.transform = `translate(${wiggle}px, ${progress * maxDrop}px)`;
       ticking = false;
     }
 
