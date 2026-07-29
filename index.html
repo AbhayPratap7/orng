@@ -1318,7 +1318,8 @@
     // How big the orange should be at each of those waypoints,
     // as a fraction of its starting size (last one uses the real
     // footer-dot size instead, so it lands exactly on target).
-    const sizeFractions = [0.92, 0.74, 0.54, 0.34, null];
+    const sizeFractions = [0.92, 0.74, 0.54, 0.34, 'cover'];
+    const finalOverlapScale = 1.7; // how much bigger than the dot the orange ends up, so it fully covers it
 
     let wp0 = null;      // captured once, from the orange's natural resting spot
     let waypoints = [];
@@ -1346,7 +1347,9 @@
         const el = document.querySelector(waypointSelectors[i]);
         if(!el){ continue; }
         const c = pageCenter(el);
-        waypoints.push({ x:c.x, y:c.y, size: sizeFractions[i]===null ? c.size : baseSize*sizeFractions[i] });
+        const frac = sizeFractions[i];
+        const size = frac === 'cover' ? c.size * finalOverlapScale : baseSize * frac;
+        waypoints.push({ x:c.x, y:c.y, size });
       }
       ready = waypoints.length > 1;
     }
