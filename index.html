@@ -1294,58 +1294,108 @@
   });
 
   // ============================================================
-  // SCROLL-LINKED ORANGE — rests at its fixed spot (matching the
-  // marked box) and spins in place always; as the visitor scrolls
-  // the hero, it drifts downward with a gentle side-to-side wiggle.
+  // SCROLL-LINKED ORANGE — travels along a winding path down the
+  // whole page as the visitor scrolls, shrinking gradually, then
+  // fades right as it settles into the footer logo dot's spot.
+  // All positions are measured live from the real layout, so the
+  // path re-maps itself on any screen size.
   // ============================================================
   (function(){
-    const heroSection = document.querySelector('.hero');
     const orangeEl = document.getElementById('scroll-orange');
-    const landingEl = document.getElementById('orange-landing');
-    if(!heroSection || !orangeEl) return;
+    if(!orangeEl) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // The waypoints the orange visits, in order, after its start.
+    const waypointSelectors = [
+      '#orange-landing',
+      '.curated-grid .big',
+      '.dest-card.dest-2',
+      '.news-img img',
+      '.footer-brand .logo .dot'
+    ];
+    // How big the orange should be at each of those waypoints,
+    // as a fraction of its starting size (last one uses the real
+    // footer-dot size instead, so it lands exactly on target).
+    const sizeFractions = [0.92, 0.74, 0.54, 0.34, null];
+
+    let wp0 = null;      // captured once, from the orange's natural resting spot
+    let waypoints = [];
+    let ready = false;
+
+    function pageCenter(el){
+      const r = el.getBoundingClientRect();
+      return { x: r.left + r.width/2 + window.scrollX, y: r.top + r.height/2 + window.scrollY, size: r.width };
+    }
+
+    function computeWaypoints(){
+      if(!wp0){
+        const r = orangeEl.getBoundingClientRect();
+        wp0 = { x: r.left + r.width/2 + window.scrollX, y: r.top + r.height/2 + window.scrollY, size: r.width };
+        orangeEl.style.position = 'fixed';
+        orangeEl.style.zIndex = '60';
+        orangeEl.style.margin = '0';
+        orangeEl.style.left = '0px';
+        orangeEl.style.top = '0px';
+      }
+      const baseSize = wp0.size;
+      waypoints = [wp0];
+      for(let i=0;i<waypointSelectors.length;i++){
+        const el = document.querySelector(waypointSelectors[i]);
+        if(!el){ continue; }
+        const c = pageCenter(el);
+        waypoints.push({ x:c.x, y:c.y, size: sizeFractions[i]===null ? c.size : baseSize*sizeFractions[i] });
+      }
+      ready = waypoints.length > 1;
+    }
+
+    function smoothstep(t){ return t*t*(3-2*t); }
+
+    function update(){
+      if(!ready) return;
+      const first = waypoints[0], last = waypoints[waypoints.length-1];
+      const refY = Math.min(Math.max(window.scrollY + window.innerHeight*0.4, first.y), last.y);
+
+      let i = 0;
+      for(; i < waypoints.length-2; i++){
+        if(refY <= waypoints[i+1].y) break;
+      }
+      const a = waypoints[i], b = waypoints[i+1];
+      const span = (b.y - a.y) || 1;
+      const t = Math.min(Math.max((refY - a.y) / span, 0), 1);
+      const et = smoothstep(t);
+
+      const overallT = Math.min(Math.max((refY - first.y) / ((last.y - first.y) || 1), 0), 1);
+      const wiggleFade = overallT > 0.85 ? Math.max(0, 1 - (overallT-0.85)/0.15) : 1;
+      const wiggle = reduceMotion ? 0 : Math.sin(overallT * Math.PI * 5) * 14 * wiggleFade;
+      const opacity = overallT > 0.93 ? Math.max(0, 1 - (overallT-0.93)/0.07) : 1;
+
+      const x = a.x + (b.x - a.x) * et;
+      const y = a.y + (b.y - a.y) * et;
+      const size = a.size + (b.size - a.size) * et;
+
+      const vx = (x - window.scrollX) + wiggle - size/2;
+      const vy = (y - window.scrollY) - size/2;
+
+      orangeEl.style.width = size + 'px';
+      orangeEl.style.height = size + 'px';
+      orangeEl.style.transform = `translate(${vx}px, ${vy}px)`;
+      orangeEl.style.opacity = opacity;
+    }
 
     let ticking = false;
-    let maxDrop = 0;
-
-    function computeMaxDrop(){
-      if(landingEl){
-        // Distance (in px) between the orange's resting spot and the
-        // marked landing spot, measured from actual layout position
-        // (unaffected by any transform already applied).
-        return Math.max(landingEl.offsetTop - orangeEl.offsetTop, 40);
-      }
-      return heroSection.getBoundingClientRect().height * 0.55;
-    }
-
-    function updateOrangePosition(){
-      const rect = heroSection.getBoundingClientRect();
-      // Move exactly as fast as the user scrolls (1:1 with scroll distance),
-      // capped once it reaches the landing spot.
-      const scrolledPast = Math.max(0, -rect.top);
-      const dy = Math.min(scrolledPast, maxDrop);
-      const progress = maxDrop > 0 ? dy / maxDrop : 0;
-      const wiggle = Math.sin(progress * Math.PI * 2.4) * 16; // gentle side-to-side drift
-
-      orangeEl.style.transform = `translate(${wiggle}px, ${dy}px)`;
-      ticking = false;
-    }
-
     function onScroll(){
       if(!ticking){
-        requestAnimationFrame(updateOrangePosition);
+        requestAnimationFrame(()=>{ update(); ticking = false; });
         ticking = true;
       }
     }
+    function onResize(){ computeWaypoints(); update(); }
 
-    function onResize(){
-      maxDrop = computeMaxDrop();
-      updateOrangePosition();
-    }
-
+    computeWaypoints();
+    update();
     window.addEventListener('scroll', onScroll, { passive:true });
     window.addEventListener('resize', onResize);
-    maxDrop = computeMaxDrop();
-    updateOrangePosition();
+    window.addEventListener('load', onResize);
   })();
 
   document.querySelectorAll('.room-select').forEach(btn=>{
