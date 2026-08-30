@@ -392,6 +392,16 @@
   .dest-intro h2{font-size:clamp(15px,2.4vw,30px);}
   .dest-intro h2 .accent{color:var(--orange);}
   .dest-intro p{font-size:var(--fs-small); line-height:1.55; opacity:0.85; max-width:26ch;}
+  .dest-intro .arrow-link{
+  white-space: nowrap !important;
+  font-size: clamp(7px, 0.78vw, 11px) !important;
+  letter-spacing: 0.04em !important;
+  gap: 5px !important;
+}
+.dest-intro{
+  padding-left: clamp(12px, 1.4vw, 24px);
+  padding-right: clamp(8px, 1vw, 16px);
+}
   .dest-card{
     position:relative;
     padding: clamp(14px,2.2vw,30px) clamp(10px,1.6vw,22px);
@@ -419,6 +429,9 @@
     padding: clamp(4px,0.6vw,7px) clamp(8px,1.2vw,14px);
     border-radius:999px; z-index:2;
   }
+  .dest-card.coming-soon svg{
+  margin-top: clamp(30px, 4.5vw, 46px);
+}
   .dest-card.dest-1 .coming-soon-badge{ background:var(--white); color:var(--orange); }
 
   .newsletter{
@@ -512,6 +525,45 @@
   }
   #booking-close svg{width:44%; height:44%;}
 
+  .booking-step{ display:none; padding: clamp(18px,3vw,34px); }
+.booking-step.active{ display:block; }
+.step-body h3{ font-family:'Archivo Black',sans-serif; text-transform:uppercase; font-size:var(--fs-card-title); margin-bottom:14px; }
+.photo-grid{ display:grid; grid-template-columns:1fr 1fr; gap:var(--gap); margin-bottom:18px; }
+.photo-grid img{ border-radius:8px; height:160px; object-fit:cover; }
+.primary-btn{ background:var(--orange); color:#fff; border:none; padding:12px 22px; border-radius:999px; font-weight:700; cursor:pointer; }
+.back-btn, .link-btn{ background:none; border:none; color:var(--orange-dark); font-weight:600; cursor:pointer; margin-left:12px; }
+.verify-toggle, .pay-tabs, .card-type-toggle{ display:flex; gap:8px; margin-bottom:14px; }
+.verify-tab, .pay-tab, .card-type-tab{ padding:8px 16px; border-radius:999px; border:1px solid var(--orange); background:transparent; cursor:pointer; font-weight:600; }
+.verify-tab.active, .pay-tab.active, .card-type-tab.active{ background:var(--orange); color:#fff; }
+#verify-input, #otp-input, #upi-id, #card-number, #card-expiry, #card-cvv{
+  width:100%; border:1px solid #c9c2ae; padding:12px 16px; border-radius:6px; margin-bottom:10px; font-family:inherit;
+}
+.card-row{ display:flex; gap:10px; }
+.field-error{ color:#c0392b; font-size:var(--fs-small); min-height:16px; }
+.price-row{ display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.08); }
+.price-row.total{ font-weight:700; border-bottom:none; }
+.confirm-body{ text-align:center; padding:20px 0; }
+.confirm-tick{ width:60px; height:60px; border-radius:50%; background:#2e7d32; color:#fff; font-size:30px; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; }
+.photo-gallery{ margin-bottom:20px; }
+.gallery-hero{
+  width:100%; height:280px; border-radius:10px; overflow:hidden; margin-bottom:8px;
+  background:#eee;
+}
+.gallery-hero img{ width:100%; height:100%; object-fit:cover; display:block; }
+.gallery-thumbs{
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;
+}
+.gallery-thumbs img{
+  width:100%; height:64px; object-fit:cover; border-radius:6px; cursor:pointer;
+  opacity:0.65; transition:opacity .15s ease, outline .15s ease;
+  outline:2px solid transparent;
+}
+.gallery-thumbs img:hover{ opacity:0.85; }
+.gallery-thumbs img.active{ opacity:1; outline:2px solid var(--orange); }
+
+@media (max-width:640px){
+  .gallery-hero{ height:200px; }
+}
   .booking-head{
     background:var(--green); color:var(--white);
     padding: clamp(20px,3.4vw,40px) clamp(20px,3.4vw,40px) clamp(16px,2.6vw,28px);
@@ -614,9 +666,28 @@
     header .logo{ font-size:13.5px; }
     #book-btn-header{ font-size:11px; padding:8px 13px; }
   }
+
+  /* ---- Skip-gate state: applied instantly by the inline script
+         at the top of <body> when this tab has already sliced the
+         orange this session, so the gate never flashes on screen. ---- */
+  body.no-gate #stage{ display:none !important; }
+  body.no-gate #site{ opacity:1 !important; }
+  html.no-gate.locked, body.no-gate.locked{ overflow:visible !important; height:auto !important; }
 </style>
 </head>
 <body class="locked">
+<script>
+  /* Runs before the gate markup below is even parsed, so on repeat
+     visits within the same tab the slice intro is skipped instantly
+     with no flash. Cleared automatically when the tab/browser is
+     closed; a manual reload (F5) does NOT bring the gate back on its
+     own — see the note at the end of this reply if you'd rather it did. */
+  if (sessionStorage.getItem('orangbnb_sliced') === '1') {
+    document.body.classList.add('no-gate');
+    document.documentElement.classList.remove('locked');
+    document.body.classList.remove('locked');
+  }
+</script>
 
 <!-- ===================== SLICE-TO-ENTER GATE ===================== -->
 <div id="stage">
@@ -643,19 +714,19 @@
   <div class="wrap">
 
     <header>
-      <div class="logo">
+      <a href="index.html" class="logo" style="text-decoration:none;">
         <span class="dot">
           <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 2 3 2.5 3 5.5S13.5 13 12 13s-3-1.5-3-4.5S11 5 12 3Z" fill="#fff"/><path d="M12 13v8" stroke="#fff" stroke-width="1.4"/></svg>
         </span>
         orang.bnb
-      </div>
+      </a>
       <nav>
-        <a href="#">Stays</a>
-        <a href="#">Experiences</a>
+        <a href="index.html">Stays</a>
+        <a href="experiences.html">Experiences</a>
         <a href="#">About Us</a>
-        <a href="#">Locations</a>
-        <a href="#" class="nav-blog">Blog</a>
-        <a href="#">Contact</a>
+        <a href="locations.html">Locations</a>
+        <a href="blog.html" class="nav-blog">Blog</a>
+        <a href="contact.html">Contact</a>
       </nav>
       <a href="#" id="book-btn-header" class="book-btn">Book Your Stay
         <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -756,7 +827,7 @@
           <p class="eyebrow" style="color:var(--orange)">Locations</p>
           <div class="thumb"><img src="Hawa mahal.jpeg" alt="Sample location image"></div>
           <p>From royal cities to peaceful getaways, find us in the most inspiring locations.</p>
-          <a href="#" class="arrow-link" style="color:var(--ink)">EXPLORE ALL LOCATIONS
+          <a href="locations.html" class="arrow-link" style="color:var(--ink)">EXPLORE ALL LOCATIONS
             <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
         </div>
@@ -765,7 +836,7 @@
           <p class="eyebrow" style="color:var(--orange)">Experiences</p>
           <div class="thumb"><img src="Orange Texture Photography for Ecodenta.jpeg" alt="Sample experience image"></div>
           <p>It's not just where you stay, it's what you experience.</p>
-          <a href="#" class="arrow-link" style="color:var(--ink)">VIEW EXPERIENCES
+          <a href="experiences.html" class="arrow-link" style="color:var(--ink)">VIEW EXPERIENCES
             <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
         </div>
@@ -798,7 +869,7 @@
     <section class="curated">
       <div class="curated-text">
         <h2>Curated<br><span class="accent">Experiences</span><br>for every<br>kind of<br>traveler</h2>
-        <a href="#" class="arrow-link">EXPLORE EXPERIENCES
+        <a href="experiences.html" class="arrow-link">EXPLORE EXPERIENCES
           <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
       </div>
@@ -816,7 +887,7 @@
         <p class="eyebrow" style="color:var(--orange)">Destinations</p>
         <h2>Places that <span class="accent">stay</span> with you, forever.</h2>
         <p>Wander through heritage, nature and culture. Make memories that last a lifetime.</p>
-        <a href="#" class="arrow-link">EXPLORE DESTINATIONS
+        <a href="locations.html" class="arrow-link">EXPLORE DESTINATIONS
           <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
       </div>
@@ -824,7 +895,7 @@
         <svg viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M32 6c3 3 3 7 0 10-3-3-3-7 0-10Z"/><path d="M14 44V22l8-6 8 6v22M34 44V18l8-7 8 7v26"/><rect x="4" y="44" width="56" height="2"/></svg>
         <h4>Jaipur</h4>
         <p>Royal heritage and timeless beauty.</p>
-        <a href="#" class="arrow-link">EXPLORE <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a href="locations.html" class="arrow-link">EXPLORE <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>
       <div class="dest-card dest-2 coming-soon">
         <span class="coming-soon-badge">Coming Soon</span>
@@ -884,12 +955,12 @@
         <div class="footer-links">
           <h5>QUICK LINKS</h5>
           <ul>
-            <li><a href="#">Stays</a></li>
-            <li><a href="#">Experiences</a></li>
+            <li><a href="index.html">Stays</a></li>
+            <li><a href="experiences.html">Experiences</a></li>
             <li><a href="#">About Us</a></li>
-            <li><a href="#">Locations</a></li>
-            <li><a href="#">Contact</a></li>
-            <li><a href="#">Blog</a></li>
+            <li><a href="locations.html">Locations</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="blog.html">Blog</a></li>
           </ul>
         </div>
         <div class="footer-help">
@@ -953,6 +1024,92 @@
         </button>
       </div>
 
+      <!-- STEP 2: Photos of selected room -->
+<div class="booking-step" id="step-photos">
+  <div class="step-body">
+    <h3 id="photos-room-title"></h3>
+    <div class="photo-gallery">
+      <div class="gallery-hero"><img id="gallery-hero-img" src="" alt=""></div>
+      <div class="gallery-thumbs" id="gallery-thumbs"></div>
+    </div>
+    <button class="primary-btn" id="photos-continue">Continue</button>
+    <button class="back-btn" data-back="step-rooms">← Back</button>
+  </div>
+</div>
+
+<!-- STEP 3: Verification method choice + input -->
+<div class="booking-step" id="step-verify">
+  <div class="step-body">
+    <h3>Verify your booking</h3>
+    <div class="verify-toggle">
+      <button class="verify-tab active" data-method="email">Email</button>
+      <button class="verify-tab" data-method="phone">Phone Number</button>
+    </div>
+    <input type="text" id="verify-input" placeholder="Enter your email">
+    <p class="field-error" id="verify-error"></p>
+    <button class="primary-btn" id="verify-send-otp">Send OTP</button>
+    <button class="back-btn" data-back="step-photos">← Back</button>
+  </div>
+</div>
+
+<!-- STEP 4: OTP entry -->
+<div class="booking-step" id="step-otp">
+  <div class="step-body">
+    <h3>Enter OTP</h3>
+    <p id="otp-sent-msg"></p>
+    <input type="text" id="otp-input" maxlength="6" placeholder="6-digit code">
+    <p class="field-error" id="otp-error"></p>
+    <button class="primary-btn" id="otp-verify-btn">Verify</button>
+    <button class="link-btn" id="otp-resend-btn">Resend OTP</button>
+  </div>
+</div>
+
+<!-- STEP 5: Price summary -->
+<div class="booking-step" id="step-price">
+  <div class="step-body">
+    <h3>Booking Summary</h3>
+    <div class="price-row"><span id="price-room-name"></span><span id="price-room-amount"></span></div>
+    <div class="price-row total"><span>Total</span><span id="price-total"></span></div>
+    <button class="primary-btn" id="book-now-btn">Book Now</button>
+  </div>
+</div>
+
+<!-- STEP 6: Payment -->
+<div class="booking-step" id="step-payment">
+  <div class="step-body">
+    <h3>Payment</h3>
+    <div class="pay-tabs">
+      <button class="pay-tab active" data-pay="upi">UPI</button>
+      <button class="pay-tab" data-pay="card">Card</button>
+    </div>
+    <div id="pay-upi" class="pay-panel">
+      <input type="text" id="upi-id" placeholder="yourname@upi">
+    </div>
+    <div id="pay-card" class="pay-panel" style="display:none;">
+      <div class="card-type-toggle">
+        <button class="card-type-tab active" data-cardtype="debit">Debit Card</button>
+        <button class="card-type-tab" data-cardtype="credit">Credit Card</button>
+      </div>
+      <input type="text" id="card-number" placeholder="Card Number">
+      <div class="card-row">
+        <input type="text" id="card-expiry" placeholder="MM/YY">
+        <input type="text" id="card-cvv" placeholder="CVV">
+      </div>
+    </div>
+    <button class="primary-btn" id="pay-now-btn">Pay & Confirm</button>
+  </div>
+</div>
+
+<!-- STEP 7: Confirmation -->
+<div class="booking-step" id="step-confirmed">
+  <div class="step-body confirm-body">
+    <div class="confirm-tick">✓</div>
+    <h3>Booking Confirmed!</h3>
+    <p id="confirm-summary"></p>
+    <button class="primary-btn" id="confirm-close-btn">Done</button>
+  </div>
+</div>
+
       <div class="room-card">
         <div class="room-top">
           <h4>1 BHK</h4>
@@ -1005,6 +1162,7 @@
 (function(){
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let soundOn = true;
+  const alreadySliced = document.body.classList.contains('no-gate');
 
   // ---------- fruit artwork ----------
   const svgWrap = (inner) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
@@ -1170,18 +1328,18 @@
 
   stage.addEventListener('pointerdown', (e)=>{
     initAudio();
-    if(sliced) return;
+    if(sliced || alreadySliced) return;
     dragging = true;
     points = [{x:e.clientX, y:e.clientY}];
   });
   stage.addEventListener('pointermove', (e)=>{
-    if(!dragging || sliced) return;
+    if(!dragging || sliced || alreadySliced) return;
     points.push({x:e.clientX, y:e.clientY});
     if(points.length > 40) points.shift();
     drawTrail();
   });
   window.addEventListener('pointerup', (e)=>{
-    if(!dragging || sliced) return;
+    if(!dragging || sliced || alreadySliced) return;
     dragging = false;
     points.push({x:e.clientX, y:e.clientY});
     const len = pathLength(points);
@@ -1259,6 +1417,7 @@
     requestAnimationFrame(()=> site.classList.add('show'));
     document.documentElement.classList.remove('locked');
     document.body.classList.remove('locked');
+    sessionStorage.setItem('orangbnb_sliced', '1');
   }
 
   document.getElementById('skip-link').addEventListener('click', ()=>{
@@ -1266,6 +1425,13 @@
     sliced = true;
     revealSite();
   });
+
+  // If this tab already sliced the orange earlier in the session,
+  // skip straight to the revealed site (the CSS/inline script above
+  // already hid the gate instantly — this just keeps state in sync).
+  if(alreadySliced){
+    document.getElementById('site').classList.add('show');
+  }
 
   // ============================================================
   // BOOKING MODAL
@@ -1415,12 +1581,151 @@
     requestAnimationFrame(tick);
   })();
 
+  (function(){
+  const state = { room:null, price:0, photos:[], method:'email', contact:'', otp:'', payMethod:'upi', cardType:'debit' };
+
+  // Edit prices + demo photos per room here
+  const ROOM_DATA = {
+    '1 Room': { price: 2500, photos: ['Hawa mahal.jpeg','Konark Wheel.jpeg'] },
+    '1 BHK':  { price: 4200, photos: ['Hawa mahal.jpeg','Konark Wheel.jpeg'] },
+    '2 BHK':  { price: 6800, photos: ['Hawa mahal.jpeg','Konark Wheel.jpeg'] },
+    '3 BHK':  { price: 9500, photos: ['Hawa mahal.jpeg','Konark Wheel.jpeg'] },
+  };
+
+  function showStep(id){
+    document.querySelectorAll('.booking-step, #step-rooms').forEach(el=> el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // Step 1 -> 2
   document.querySelectorAll('.room-select').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      // Room-level booking flow (dates, guests, pricing) to be added next.
-      console.log('Room selected:', btn.dataset.room);
+      const roomName = btn.dataset.room;
+      const data = ROOM_DATA[roomName];
+      state.room = roomName; state.price = data.price; state.photos = data.photos;
+
+      document.getElementById('photos-room-title').textContent = roomName;
+      const heroImg = document.getElementById('gallery-hero-img');
+const thumbsWrap = document.getElementById('gallery-thumbs');
+heroImg.src = data.photos[0];
+heroImg.alt = roomName;
+thumbsWrap.innerHTML = data.photos.map((src,i)=>
+  `<img src="${src}" alt="${roomName} photo ${i+1}" class="${i===0?'active':''}" data-src="${src}">`
+).join('');
+thumbsWrap.querySelectorAll('img').forEach(thumb=>{
+  thumb.addEventListener('click', ()=>{
+    heroImg.src = thumb.dataset.src;
+    thumbsWrap.querySelectorAll('img').forEach(t=>t.classList.remove('active'));
+    thumb.classList.add('active');
+  });
+});
+      showStep('step-photos');
     });
   });
+
+  // Step 2 -> 3
+  document.getElementById('photos-continue').addEventListener('click', ()=> showStep('step-verify'));
+
+  // Verify tabs (email/phone)
+  document.querySelectorAll('.verify-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.verify-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      state.method = tab.dataset.method;
+      document.getElementById('verify-input').placeholder = state.method === 'email' ? 'Enter your email' : 'Enter your phone number';
+      document.getElementById('verify-input').value = '';
+    });
+  });
+
+  // Step 3 -> 4 (send OTP)
+  document.getElementById('verify-send-otp').addEventListener('click', ()=>{
+    const val = document.getElementById('verify-input').value.trim();
+    const errEl = document.getElementById('verify-error');
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    const phoneOk = /^[6-9]\d{9}$/.test(val);
+    if((state.method === 'email' && !emailOk) || (state.method === 'phone' && !phoneOk)){
+      errEl.textContent = state.method === 'email' ? 'Enter a valid email address.' : 'Enter a valid 10-digit phone number.';
+      return;
+    }
+    errEl.textContent = '';
+    state.contact = val;
+
+    // --- REAL INTEGRATION POINT ---
+    // Replace this block with an API call to your backend, which sends
+    // an OTP via email (from orngbnb@gmail.com) or SMS (from 6376351281).
+    state.otp = String(Math.floor(100000 + Math.random()*900000));
+    console.log('DEMO OTP:', state.otp); // remove in production
+    // --- END INTEGRATION POINT ---
+
+    const sender = state.method === 'email' ? 'orngbnb@gmail.com' : '6376351281';
+    document.getElementById('otp-sent-msg').textContent = `A 6-digit OTP was sent from ${sender} to ${val}.`;
+    showStep('step-otp');
+  });
+
+  // Step 4: verify OTP
+  document.getElementById('otp-verify-btn').addEventListener('click', ()=>{
+    const entered = document.getElementById('otp-input').value.trim();
+    const errEl = document.getElementById('otp-error');
+    if(entered !== state.otp){
+      errEl.textContent = 'Incorrect OTP. Please try again.';
+      return;
+    }
+    errEl.textContent = '';
+    document.getElementById('price-room-name').textContent = state.room;
+    document.getElementById('price-room-amount').textContent = '₹' + state.price;
+    document.getElementById('price-total').textContent = '₹' + state.price;
+    showStep('step-price');
+  });
+  document.getElementById('otp-resend-btn').addEventListener('click', ()=>{
+    state.otp = String(Math.floor(100000 + Math.random()*900000));
+    console.log('DEMO OTP (resent):', state.otp);
+  });
+
+  // Step 5 -> 6
+  document.getElementById('book-now-btn').addEventListener('click', ()=> showStep('step-payment'));
+
+  // Pay tabs (UPI/Card)
+  document.querySelectorAll('.pay-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.pay-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      state.payMethod = tab.dataset.pay;
+      document.getElementById('pay-upi').style.display = state.payMethod === 'upi' ? 'block' : 'none';
+      document.getElementById('pay-card').style.display = state.payMethod === 'card' ? 'block' : 'none';
+    });
+  });
+  document.querySelectorAll('.card-type-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.card-type-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      state.cardType = tab.dataset.cardtype;
+    });
+  });
+
+  // Step 6 -> 7 (pay)
+  document.getElementById('pay-now-btn').addEventListener('click', ()=>{
+    // --- REAL INTEGRATION POINT ---
+    // Replace with a call to your payment gateway (Razorpay/Stripe/PayU),
+    // passing state.payMethod / state.cardType, and only show "confirmed"
+    // after the gateway returns a verified success response.
+    document.getElementById('confirm-summary').textContent =
+      `${state.room} booked for ₹${state.price}. Confirmation sent to ${state.contact}.`;
+    showStep('step-confirmed');
+  });
+
+  // Step 7: close
+  document.getElementById('confirm-close-btn').addEventListener('click', ()=>{
+    document.getElementById('booking-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+    showStep('step-rooms'); // reset for next time
+  });
+
+  // Back buttons
+  document.querySelectorAll('.back-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> showStep(btn.dataset.back));
+  });
+})();
+  
 
 })();
 </script>
